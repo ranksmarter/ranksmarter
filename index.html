@@ -3,96 +3,202 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ranking Stability Check</title>
+  <title>RankSmarter | Defensible shortlists</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; max-width: 1100px; }
     .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-    .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-top: 14px; }
+    .rowTop { align-items: flex-start; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 14px; margin-top: 14px; }
     .muted { color: #555; }
     .big { font-size: 1.15rem; line-height: 1.35; }
+    .heroTitle { font-size: 2.0rem; margin: 0; }
+    .heroSub { font-size: 1.15rem; margin: 8px 0 0 0; }
+    .pill { display: inline-block; padding: 2px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.92rem; margin-right: 8px; margin-top: 6px; }
+    .ok { color: #0b6a2b; }
+    .warn { color: #7a4b00; }
+    .err { color: #8a1f1f; }
     label { display: inline-block; }
+    select, input[type="number"] { padding: 6px 8px; border-radius: 10px; border: 1px solid #ddd; }
     input[type="range"] { width: 360px; }
-    input[type="number"] { width: 110px; }
-    select { padding: 4px 6px; }
-    button { padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+    button { padding: 9px 12px; border-radius: 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; vertical-align: top; }
-    code { background: #f6f6f6; padding: 2px 6px; border-radius: 6px; }
+    a { color: inherit; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
-    canvas { width: 100%; height: 220px; border: 1px solid #eee; border-radius: 10px; }
-    .pill { display: inline-block; padding: 2px 8px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.9rem; margin-right: 8px; }
-    .warn { color: #7a4b00; }
-    .ok { color: #0b6a2b; }
-    .err { color: #8a1f1f; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; vertical-align: top; }
+    code { background: #f6f6f6; padding: 2px 6px; border-radius: 8px; }
+    canvas { width: 100%; height: 220px; border: 1px solid #eee; border-radius: 12px; }
+    details summary { cursor: pointer; }
+    .soft { background: #fafafa; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 0.95rem; }
+    .divider { border: none; border-top: 1px solid #eee; margin: 14px 0; }
+
+    /* Modal */
+    .modalBackdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      display: none; align-items: center; justify-content: center; padding: 18px;
+      z-index: 999;
+    }
+    .modal {
+      background: #fff; border-radius: 14px; max-width: 880px; width: 100%;
+      border: 1px solid #ddd; box-shadow: 0 18px 60px rgba(0,0,0,0.22);
+      max-height: 86vh; overflow: auto;
+    }
+    .modalHeader { display:flex; justify-content: space-between; align-items:center; padding: 14px; border-bottom: 1px solid #eee; }
+    .modalBody { padding: 14px; }
+    .modalClose { border: 1px solid #ddd; background: #fff; border-radius: 10px; padding: 8px 10px; cursor: pointer; }
+    .callout { border-left: 4px solid #ddd; padding: 10px 12px; background: #fbfbfb; border-radius: 10px; }
   </style>
 </head>
 <body>
-  <h1>Ranking Stability Check</h1>
-  <p class="muted">
-    Upload a CSV and sanity-check whether the ranking is robust. All computation runs locally in your browser.
-    This is a robustness test, not a claim about true uncertainty.
+  <h1 class="heroTitle">RankSmarter</h1>
+  <p class="heroSub">
+    Defensible shortlists, not fake precision.
   </p>
 
-  <div class="card">
+  <div class="card soft" style="max-width: 980px;">
     <div class="row">
-      <input id="file" type="file" accept=".csv,text/csv" />
-      <span class="muted">Expected headers like <code>item</code> and <code>score</code>, but you can map columns below.</span>
+      <span class="pill">Hiring scorecards</span>
+      <span class="pill">Vendor selection</span>
+      <span class="pill">Product prioritisation</span>
+      <span class="pill">Investment shortlists</span>
+    </div>
+
+    <p style="margin: 12px 0 0 0; max-width: 940px;">
+      Upload your scores. Choose how many you are selecting. This tool tells you whether a strict cutoff is defensible, or whether you should treat the boundary as a tie band.
+    </p>
+
+    <p class="muted" style="margin: 10px 0 0 0;">
+      Output is a plain-English decision rule, for example:
+      <br>
+      <strong>“Unless you are confident scores are accurate within ±0.5%, treat the Top 3 as equal.”</strong>
+      <span style="margin-left: 10px;">
+        <a href="#" id="openMath">Explain the maths</a>
+      </span>
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="row rowTop">
+      <div style="min-width: 320px;">
+        <label style="display:block;">
+          <strong>Upload scores (CSV)</strong><br>
+          <input id="file" type="file" accept=".csv,text/csv" />
+        </label>
+        <div class="muted" style="margin-top:8px;">
+          One row per item. One numeric score per row.
+        </div>
+      </div>
+
+      <div style="flex: 1;">
+        <div class="muted" style="margin-bottom: 10px;">
+          Expected columns like <code>item</code> and <code>score</code>. If yours differ, you can map columns after upload.
+        </div>
+        <div class="row" style="gap: 10px;">
+          <button id="loadDemo">Try demo data</button>
+          <button id="downloadExample">Download example CSV</button>
+        </div>
+
+        <details style="margin-top: 10px;">
+          <summary class="muted">What CSV format do you want?</summary>
+          <div class="muted" style="margin-top: 8px;">
+            Two columns is enough:
+            <ul>
+              <li><code>item</code> is a name or identifier (candidate, vendor, idea).</li>
+              <li><code>score</code> is a number (higher is better).</li>
+            </ul>
+            If your headers differ, you can map the columns after upload.
+          </div>
+        </details>
+      </div>
     </div>
 
     <div id="mapRow" class="row" style="margin-top: 12px; display:none;">
       <label>Item column<br><select id="itemCol"></select></label>
       <label>Score column<br><select id="scoreCol"></select></label>
       <label>Rows to preview<br><input id="previewN" type="number" min="5" max="200" step="5" value="25"></label>
-      <button id="applyMap">Apply</button>
+      <button id="applyMap">Run</button>
       <span id="parseStatus" class="muted"></span>
     </div>
   </div>
 
   <div id="controls" class="card" style="display:none;">
     <div class="row">
-      <label>Top-k cutoff<br>
+      <label><strong>How many are you selecting?</strong><br>
+        <select id="pickN">
+          <option value="1">Select 1</option>
+          <option value="3">Select 3</option>
+          <option value="5" selected>Select 5</option>
+          <option value="10">Select 10</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </label>
+
+      <label id="customPickWrap" style="display:none;"><strong>Custom selection size</strong><br>
         <input id="k" type="number" min="1" step="1" value="5">
       </label>
 
-      <label>ε (score wiggle room)<br>
-        <input id="eps" type="range" min="0" max="1" step="0.001" value="0">
-      </label>
-      <div>
-        <div>ε: <strong id="epsLabel">0.000</strong></div>
-        <div class="muted">or <span id="epsPct">0.00%</span> of score range</div>
+      <div style="flex:1;"></div>
+
+      <button id="exportJson">Export result JSON</button>
+    </div>
+
+    <hr class="divider">
+
+    <details>
+      <summary class="muted">Advanced (optional)</summary>
+      <div class="row" style="margin-top: 10px;">
+        <label>Assumed score wiggle room<br>
+          <input id="eps" type="range" min="0" max="1" step="0.001" value="0">
+        </label>
+
+        <div>
+          <div>Wiggle room: <strong id="epsLabel">0.000</strong></div>
+          <div class="muted">or <span id="epsPct">0.00%</span> of score range</div>
+        </div>
+
+        <label>Wiggle room (% of range)<br>
+          <input id="epsPctInput" type="number" min="0" max="200" step="0.1" value="0">
+        </label>
       </div>
 
-      <label>ε as % of score range<br>
-        <input id="epsPctInput" type="number" min="0" max="200" step="0.1" value="0">
-      </label>
-
-      <button id="exportJson">Export JSON</button>
-    </div>
-
-    <hr style="border:none;border-top:1px solid #eee;margin:14px 0;">
-
-    <div class="row">
-      <label><input id="mcEnable" type="checkbox"> Monte Carlo mode</label>
-      <label>Samples<br><input id="mcN" type="number" min="200" max="20000" step="200" value="2000" disabled></label>
-      <label>Seed<br><input id="mcSeed" type="number" min="0" max="999999999" step="1" value="12345" disabled></label>
-      <button id="runMc" disabled>Run Monte Carlo</button>
-      <span class="muted">Optional. Deterministic breakpoints are computed instantly.</span>
-    </div>
+      <div class="row" style="margin-top: 10px;">
+        <label><input id="mcEnable" type="checkbox"> Run stress test</label>
+        <label>Samples<br><input id="mcN" type="number" min="200" max="20000" step="200" value="2000" disabled></label>
+        <label>Seed<br><input id="mcSeed" type="number" min="0" max="999999999" step="1" value="12345" disabled></label>
+        <button id="runMc" disabled>Run stress test</button>
+        <span class="muted">Simulates many small simultaneous score errors within the wiggle room.</span>
+      </div>
+    </details>
   </div>
 
   <div id="out" class="card" style="display:none;">
-    <div id="headline" class="big"></div>
-    <p id="sub" class="muted"></p>
+    <div class="row">
+      <div style="flex: 1;">
+        <div id="headline" class="big"></div>
+        <p id="sub" class="muted" style="margin-top: 8px;"></p>
+      </div>
+      <div style="text-align:right;">
+        <a href="#" id="openMath2" class="muted">Explain the maths</a>
+      </div>
+    </div>
 
     <div class="grid">
       <div class="card" style="margin-top:0;">
-        <h3>Breakpoints</h3>
+        <h3>Decision thresholds</h3>
         <table id="bpTable"></table>
+        <p class="muted" style="margin-top: 10px;">
+          “Selection threshold” is the accuracy needed for your selected set not to change.
+          “Any-swap threshold” is stricter, it requires no adjacent swaps anywhere.
+        </p>
       </div>
+
       <div class="card" style="margin-top:0;">
-        <h3>Clusters at ε = <span id="epsLabel2">0.000</span></h3>
+        <h3>Tie bands at current wiggle room</h3>
+        <div class="muted" style="margin-top:-6px; margin-bottom:10px;">
+          Items in the same band are not reliably separable at this assumed wiggle room.
+        </div>
         <div id="clusters"></div>
       </div>
     </div>
@@ -101,12 +207,13 @@
       <div class="card" style="margin-top:0;">
         <h3>Scores (sorted)</h3>
         <canvas id="scorePlot" width="1000" height="260"></canvas>
-        <p class="muted">Each point is an item. Tight packing suggests fragile ordering.</p>
+        <p class="muted">Dense packing near the selection boundary often means an unstable cutoff.</p>
       </div>
+
       <div class="card" style="margin-top:0;">
         <h3>Adjacent gaps</h3>
         <canvas id="gapPlot" width="1000" height="260"></canvas>
-        <p class="muted">Gaps below <code>2ε</code> indicate adjacent items can swap under ±ε perturbations.</p>
+        <p class="muted">Gaps below <code>2 × wiggle room</code> indicate adjacent items can swap under reasonable score error.</p>
       </div>
     </div>
 
@@ -116,33 +223,120 @@
     </div>
 
     <div id="mcOut" class="card" style="display:none;">
-      <h3>Monte Carlo results</h3>
+      <h3>Stress test results</h3>
       <p id="mcSummary" class="big"></p>
 
       <div class="grid">
         <div class="card" style="margin-top:0;">
-          <h4>Top-k stability</h4>
+          <h4>Selection stability</h4>
           <table id="mcTopKTable"></table>
           <p class="muted">
-            <strong>Top-k set unchanged</strong> is the fraction of simulations where the selected top-k items exactly match the original top-k.
-            <br>
-            <strong>Avg overlap</strong> is the average fraction of original top-k items still present in the simulated top-k.
+            “Selected set unchanged” is the fraction of simulations where the selected items exactly match the original selection.
+            “Average overlap” is the average fraction of original selected items still present.
           </p>
         </div>
+
         <div class="card" style="margin-top:0;">
           <h4>Per-item movement (first 30)</h4>
           <table id="mcMoveTable"></table>
-          <p class="muted">Same-rank % refers to the item staying in its original rank position, not merely staying within the top-k.</p>
+          <p class="muted">Same-rank % means the item stayed in the exact same rank position.</p>
         </div>
       </div>
 
       <div class="card" style="margin-top:14px;">
-        <h4>Top-k inclusion probabilities (first 30 by original rank)</h4>
+        <h4>Selection inclusion probabilities (first 30 by original rank)</h4>
         <table id="mcInclTable"></table>
-        <p class="muted">P(in Top-k) is the fraction of simulations in which the item appears in the simulated Top-k.</p>
+        <p class="muted">P(in selection) is how often an item appears in the selected set under score error within the wiggle room.</p>
       </div>
 
-      <p class="muted">Monte Carlo assumes independent uniform noise in ±ε. Use it as a stress test, not a truth claim.</p>
+      <p class="muted">This is a stress test, not a claim about true uncertainty. It answers: “If scores are this noisy, how often would the decision change?”</p>
+    </div>
+  </div>
+
+  <!-- Maths modal -->
+  <div id="mathBackdrop" class="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="mathTitle">
+    <div class="modal">
+      <div class="modalHeader">
+        <div>
+          <strong id="mathTitle">Explain the maths</strong>
+          <div class="muted" style="margin-top: 4px;">Optional detail. The main output remains the plain-English verdict.</div>
+        </div>
+        <button class="modalClose" id="closeMath">Close</button>
+      </div>
+      <div class="modalBody">
+        <div class="callout">
+          <strong>What the tool is really doing</strong><br>
+          You have a list of items with scores. You want to select N items. The question is whether the ranking supports that decision or whether it is “fake precision”.
+        </div>
+
+        <h3 style="margin-top: 16px;">1) The model: bounded score error</h3>
+        <p>
+          We assume each score may be wrong by up to a “wiggle room” amount, written as <span class="kbd">±ε</span>.
+          This is not claiming the true error distribution. It is a decision stress model:
+          <br>
+          “If scores could be off by up to this much, would your decision change?”
+        </p>
+
+        <h3>2) The selection threshold (the one you care about)</h3>
+        <p>
+          Let <span class="kbd">s₁ ≥ s₂ ≥ …</span> be your sorted scores.
+          If you are selecting N items, the selection boundary is between rank <span class="kbd">N</span> and <span class="kbd">N+1</span>.
+        </p>
+        <p>
+          The key gap is <span class="kbd">g = s_N − s_{N+1}</span>.
+          Under bounded error <span class="kbd">±ε</span>, the “inside” item could drop by <span class="kbd">ε</span> and the “outside” item could rise by <span class="kbd">ε</span>.
+          The boundary can flip when:
+        </p>
+        <p class="kbd">
+          s_N − ε ≤ s_{N+1} + ε
+        </p>
+        <p>
+          Rearranging gives:
+        </p>
+        <p class="kbd">
+          ε ≥ (s_N − s_{N+1}) / 2
+        </p>
+        <p>
+          So the tool reports the critical threshold:
+          <br>
+          <strong>Required accuracy to keep the selected set unchanged = ±(gap / 2)</strong>
+          <br>
+          and also expresses it as a percent of the score range for readability.
+        </p>
+
+        <h3>3) The any-swap threshold (strict, usually secondary)</h3>
+        <p>
+          If you want absolutely no adjacent swaps anywhere in the ranking, the strict condition is based on the smallest adjacent gap in the entire list.
+          Let <span class="kbd">g_min</span> be the minimum of all adjacent gaps. Then:
+        </p>
+        <p class="kbd">
+          ε ≥ g_min / 2
+        </p>
+        <p>
+          This is why the tool shows two thresholds. The selection threshold is about your decision. The any-swap threshold is about total ordering everywhere.
+        </p>
+
+        <h3>4) Tie bands</h3>
+        <p>
+          Two adjacent items are not reliably separable under bounded error if their gap is at most <span class="kbd">2ε</span>.
+          The tool groups consecutive items into bands where each adjacent gap is ≤ <span class="kbd">2ε</span>.
+          A band is a set of ranks where the internal order is not defensible under the assumed wiggle room.
+        </p>
+
+        <h3>5) Stress test</h3>
+        <p>
+          The stress test adds random noise in the range <span class="kbd">[-ε, +ε]</span> to each score and re-sorts many times.
+          It reports how often the selected set stays identical and how often each item is included.
+          This captures the combinatorial effect of many small simultaneous perturbations, which is not easy to reason about by eye.
+        </p>
+
+        <hr class="divider">
+
+        <p class="muted">
+          Practical interpretation: the tool converts “close scores” into an explicit precision claim.
+          If you cannot defend that precision, do not pretend the boundary is real.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -162,47 +356,28 @@
         if (inQuotes) {
           if (c === '"') {
             const next = text[i + 1];
-            if (next === '"') {
-              field += '"';
-              i++;
-            } else {
-              inQuotes = false;
-            }
+            if (next === '"') { field += '"'; i++; }
+            else { inQuotes = false; }
           } else {
             field += c;
           }
         } else {
-          if (c === '"') {
-            inQuotes = true;
-          } else if (c === ",") {
-            row.push(field);
-            field = "";
-          } else if (c === "\n") {
-            row.push(field);
-            field = "";
-            rows.push(row);
-            row = [];
-          } else if (c === "\r") {
-            // ignore
-          } else {
-            field += c;
-          }
+          if (c === '"') inQuotes = true;
+          else if (c === ",") { row.push(field); field = ""; }
+          else if (c === "\n") { row.push(field); field = ""; rows.push(row); row = []; }
+          else if (c === "\r") { /* ignore */ }
+          else field += c;
         }
       }
       row.push(field);
       rows.push(row);
 
-      const cleaned = rows
-        .map(r => r.map(x => (x ?? "").trim()))
-        .filter(r => r.some(x => x !== ""));
-
+      const cleaned = rows.map(r => r.map(x => (x ?? "").trim())).filter(r => r.some(x => x !== ""));
       if (cleaned.length < 2) throw new Error("CSV must have a header row and at least one data row.");
       return cleaned;
     }
 
-    function toLowerTrim(s) {
-      return (s ?? "").toString().trim().toLowerCase();
-    }
+    function toLowerTrim(s) { return (s ?? "").toString().trim().toLowerCase(); }
 
     function guessColumn(headers, candidates) {
       const lower = headers.map(toLowerTrim);
@@ -221,25 +396,14 @@
       return Number.isFinite(n) ? n : null;
     }
 
-    function sortDesc(rows) {
-      return [...rows].sort((a, b) => b.score - a.score);
-    }
+    function sortDesc(rows) { return [...rows].sort((a, b) => b.score - a.score); }
 
     function computeBreakpoints(sorted) {
       const n = sorted.length;
       const gaps = [];
-      for (let i = 0; i < n - 1; i++) {
-        gaps.push(sorted[i].score - sorted[i + 1].score);
-      }
+      for (let i = 0; i < n - 1; i++) gaps.push(sorted[i].score - sorted[i + 1].score);
       const epsAnyFlip = Math.min(...gaps) / 2;
-
-      const topK = [1, 3, 5, 10, 20].filter(k => k < n);
-      const epsTopK = topK.map(k => ({
-        k,
-        eps: (sorted[k - 1].score - sorted[k].score) / 2
-      }));
-
-      return { gaps, epsAnyFlip, epsTopK };
+      return { gaps, epsAnyFlip };
     }
 
     function clustersAtEps(sorted, eps) {
@@ -262,33 +426,23 @@
       return x.toFixed(4);
     }
 
+    function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+
     function renderTable(el, headers, rows) {
       el.innerHTML = "";
       const thead = document.createElement("thead");
       const trh = document.createElement("tr");
-      headers.forEach(h => {
-        const th = document.createElement("th");
-        th.textContent = h;
-        trh.appendChild(th);
-      });
+      headers.forEach(h => { const th = document.createElement("th"); th.textContent = h; trh.appendChild(th); });
       thead.appendChild(trh);
       el.appendChild(thead);
 
       const tbody = document.createElement("tbody");
       rows.forEach(r => {
         const tr = document.createElement("tr");
-        r.forEach(cell => {
-          const td = document.createElement("td");
-          td.textContent = cell;
-          tr.appendChild(td);
-        });
+        r.forEach(cell => { const td = document.createElement("td"); td.textContent = cell; tr.appendChild(td); });
         tbody.appendChild(tr);
       });
       el.appendChild(tbody);
-    }
-
-    function clamp(x, a, b) {
-      return Math.max(a, Math.min(b, x));
     }
 
     // ---------------------------
@@ -319,7 +473,7 @@
       ctx.fillStyle = "#444";
       ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
       ctx.fillText(opts.yLabel || "", 8, 18);
-      ctx.fillText(opts.xLabel || "", padL + innerW - 110, padT + innerH + 26);
+      ctx.fillText(opts.xLabel || "", padL + innerW - 160, padT + innerH + 26);
 
       const ticks = 4;
       for (let t = 0; t <= ticks; t++) {
@@ -361,7 +515,7 @@
     }
 
     // ---------------------------
-    // Monte Carlo (optional)
+    // Monte Carlo stress test
     // ---------------------------
     function mulberry32(seed) {
       let a = seed >>> 0;
@@ -373,21 +527,17 @@
       };
     }
 
-    // Updated: includes exact Top-k stability metrics
     function runMonteCarlo(sorted, eps, nSamp, seed, k) {
       const rng = mulberry32(seed);
       const n = sorted.length;
 
-      // Original Top-k set
-      const topK0 = new Set(sorted.slice(0, k).map(r => r.item));
-      let topKSetSameCount = 0;
-      let topKOverlapSum = 0;
+      const selected0 = new Set(sorted.slice(0, k).map(r => r.item));
+      let setSameCount = 0;
+      let overlapSum = 0;
 
-      // Per-item inclusion in top-k
-      const topKInCount = new Map();
-      sorted.forEach(r => topKInCount.set(r.item, 0));
+      const inCount = new Map();
+      sorted.forEach(r => inCount.set(r.item, 0));
 
-      // Track per item: count same rank, min rank, max rank, sum abs displacement
       const stats = new Map();
       sorted.forEach((r, i) => {
         stats.set(r.item, { origRank: i + 1, same: 0, minRank: i + 1, maxRank: i + 1, sumAbs: 0 });
@@ -399,40 +549,30 @@
       for (let s = 0; s < nSamp; s++) {
         const pert = sorted.map(r => {
           const u = rng();
-          const delta = (u * 2 - 1) * eps; // uniform in [-eps, eps]
+          const delta = (u * 2 - 1) * eps;
           return { item: r.item, score: r.score + delta };
         }).sort((a, b) => b.score - a.score);
 
-        // Top-k set in this simulation
-        const topKt = pert.slice(0, k).map(r => r.item);
-        const topKtSet = new Set(topKt);
+        const selectedT = pert.slice(0, k).map(r => r.item);
+        const selectedSet = new Set(selectedT);
 
-        // (A) Top-k set unchanged
-        if (topKtSet.size === topK0.size) {
-          let same = true;
-          for (const it of topK0) {
-            if (!topKtSet.has(it)) { same = false; break; }
-          }
-          if (same) topKSetSameCount++;
-        }
+        // exact set match
+        let same = true;
+        for (const it of selected0) { if (!selectedSet.has(it)) { same = false; break; } }
+        if (same && selectedSet.size === selected0.size) setSameCount++;
 
-        // (B) Overlap fraction
+        // overlap
         let overlap = 0;
-        for (const it of topKtSet) {
-          if (topK0.has(it)) overlap++;
-        }
-        topKOverlapSum += overlap;
+        for (const it of selectedSet) if (selected0.has(it)) overlap++;
+        overlapSum += overlap;
 
-        // (C) Per-item inclusion counts
-        for (const it of topKtSet) {
-          topKInCount.set(it, topKInCount.get(it) + 1);
-        }
+        // inclusion
+        for (const it of selectedSet) inCount.set(it, inCount.get(it) + 1);
 
-        // Per-item ranks in this simulation
+        // movement
         const rankByItem = new Map();
         pert.forEach((r, idx) => rankByItem.set(r.item, idx + 1));
 
-        // Per-item movement stats
         pert.forEach((r, idx) => {
           const st = stats.get(r.item);
           const rk = idx + 1;
@@ -442,7 +582,6 @@
           st.sumAbs += Math.abs(rk - st.origRank);
         });
 
-        // Inversions relative to original order (O(n^2), only for small n)
         if (n <= 200) {
           for (let i = 0; i < n; i++) {
             for (let j = i + 1; j < n; j++) {
@@ -467,23 +606,21 @@
       });
       rows.sort((a, b) => a.origRank - b.origRank);
 
-      let inversionRate = null;
-      if (n <= 200) inversionRate = inversionCount / (nSamp * totalPairs);
+      const inversionRate = (n <= 200) ? inversionCount / (nSamp * totalPairs) : null;
 
-      const topK = {
+      const selection = {
         k,
-        setSameProb: topKSetSameCount / nSamp,
-        avgOverlapFrac: (topKOverlapSum / nSamp) / k,
-        inclusionProb: Array.from(topKInCount.entries())
-          .map(([item, cnt]) => ({ item, prob: cnt / nSamp }))
+        setSameProb: setSameCount / nSamp,
+        avgOverlapFrac: (overlapSum / nSamp) / k,
+        inclusionProb: Array.from(inCount.entries()).map(([item, cnt]) => ({ item, prob: cnt / nSamp }))
           .sort((a, b) => b.prob - a.prob)
       };
 
-      return { rows, inversionRate, nSamp, seed, eps, topK };
+      return { rows, inversionRate, nSamp, seed, eps, selection };
     }
 
     // ---------------------------
-    // UI wiring
+    // UI elements
     // ---------------------------
     const fileInput = document.getElementById("file");
     const mapRow = document.getElementById("mapRow");
@@ -494,10 +631,12 @@
     const previewN = document.getElementById("previewN");
 
     const controls = document.getElementById("controls");
+    const pickN = document.getElementById("pickN");
+    const customPickWrap = document.getElementById("customPickWrap");
     const kInput = document.getElementById("k");
+
     const epsSlider = document.getElementById("eps");
     const epsLabel = document.getElementById("epsLabel");
-    const epsLabel2 = document.getElementById("epsLabel2");
     const epsPct = document.getElementById("epsPct");
     const epsPctInput = document.getElementById("epsPctInput");
     const exportJsonBtn = document.getElementById("exportJson");
@@ -522,10 +661,37 @@
     const mcMoveTable = document.getElementById("mcMoveTable");
     const mcInclTable = document.getElementById("mcInclTable");
 
+    const loadDemoBtn = document.getElementById("loadDemo");
+    const downloadExampleBtn = document.getElementById("downloadExample");
+
+    // Modal
+    const mathBackdrop = document.getElementById("mathBackdrop");
+    const openMath = document.getElementById("openMath");
+    const openMath2 = document.getElementById("openMath2");
+    const closeMath = document.getElementById("closeMath");
+
     let rawGrid = null;
     let headers = null;
     let dataRows = null;
     let state = null;
+
+    function openMathModal(e) {
+      if (e) e.preventDefault();
+      mathBackdrop.style.display = "flex";
+    }
+    function closeMathModal(e) {
+      if (e) e.preventDefault();
+      mathBackdrop.style.display = "none";
+    }
+    openMath.addEventListener("click", openMathModal);
+    openMath2.addEventListener("click", openMathModal);
+    closeMath.addEventListener("click", closeMathModal);
+    mathBackdrop.addEventListener("click", (e) => {
+      if (e.target === mathBackdrop) closeMathModal(e);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") mathBackdrop.style.display = "none";
+    });
 
     function fillSelect(selectEl, headers) {
       selectEl.innerHTML = "";
@@ -560,49 +726,109 @@
       return { rows, sorted, scores, min, max, range, bps };
     }
 
+    function enableMcUI(enabled) {
+      mcN.disabled = !enabled;
+      mcSeed.disabled = !enabled;
+      runMcBtn.disabled = !enabled;
+      if (!enabled) mcOut.style.display = "none";
+    }
+
+    function selectionSize() {
+      if (!state) return 1;
+
+      let v = pickN.value;
+      if (v === "custom") {
+        customPickWrap.style.display = "inline-block";
+        const n = state.sorted.length;
+        const k = clamp(Math.floor(Number(kInput.value) || 1), 1, n - 1);
+        kInput.value = String(k);
+        return k;
+      } else {
+        customPickWrap.style.display = "none";
+        const k = Number(v);
+        const n = state.sorted.length;
+        return clamp(k, 1, n - 1);
+      }
+    }
+
     function updateEpsControls() {
       const maxEps = Math.max(state.range / 2, state.range * 0.05, 1e-6);
       epsSlider.min = "0";
       epsSlider.max = String(maxEps);
       epsSlider.step = String(maxEps / 500);
+
       const current = Number(epsSlider.value) || 0;
       epsSlider.value = String(clamp(current, 0, maxEps));
 
-      const eps = Number(epsSlider.value);
+      const eps = Number(epsSlider.value) || 0;
       const pct = (eps / state.range) * 100;
       epsPctInput.value = String(pct.toFixed(2));
 
       updateOutputs();
     }
 
-    function currentK() {
-      const n = state.sorted.length;
-      const k = clamp(Math.floor(Number(kInput.value) || 1), 1, n - 1);
-      kInput.value = String(k);
-      return k;
+    function bandSuggestion(sorted, eps, k) {
+      const n = sorted.length;
+      const cutIdx = k - 1;
+      if (cutIdx < 0 || cutIdx >= n - 1) return null;
+
+      const gapAtCut = sorted[cutIdx].score - sorted[cutIdx + 1].score;
+      if (gapAtCut > 2 * eps) return null;
+
+      let lo = cutIdx;
+      let hi = cutIdx + 1;
+
+      while (lo > 0) {
+        const g = sorted[lo - 1].score - sorted[lo].score;
+        if (g <= 2 * eps) lo--;
+        else break;
+      }
+      while (hi < n - 1) {
+        const g = sorted[hi].score - sorted[hi + 1].score;
+        if (g <= 2 * eps) hi++;
+        else break;
+      }
+      return { loRank: lo + 1, hiRank: hi + 1 };
     }
 
     function updateOutputs() {
       if (!state) return;
+
       const eps = Number(epsSlider.value) || 0;
+      const epsPctVal = (eps / state.range) * 100;
       epsLabel.textContent = fmt(eps);
-      epsLabel2.textContent = fmt(eps);
-      epsPct.textContent = ((eps / state.range) * 100).toFixed(2) + "%";
+      epsPct.textContent = epsPctVal.toFixed(2) + "%";
 
-      const k = currentK();
-      const epsTopK = (state.sorted[k - 1].score - state.sorted[k].score) / 2;
+      const k = selectionSize();
+      kInput.max = String(Math.max(1, state.sorted.length - 1));
 
-      const badge = epsTopK <= eps ? `<span class="pill warn">At ε this cutoff is unstable</span>` : `<span class="pill ok">At ε this cutoff is stable</span>`;
-      headline.innerHTML = `${badge} Top-${k} membership is only defensible if your scoring is accurate to within ±${fmt(epsTopK)}.`;
-      sub.textContent =
-        `Interpretation: if you cannot honestly defend score precision better than ±${fmt(epsTopK)}, treat ranks around the cutoff as tied or gather better data.`;
+      const epsSel = (state.sorted[k - 1].score - state.sorted[k].score) / 2;
+      const epsAny = state.bps.epsAnyFlip;
 
-      const bpRows = [
-        ["Minimum ε to flip any adjacent pair", fmt(state.bps.epsAnyFlip)],
-        ["ε to break Top-" + k + " membership (k vs k+1)", fmt(epsTopK)],
-        ...state.bps.epsTopK.map(x => [`ε to break Top-${x.k} membership`, fmt(x.eps)])
-      ];
-      renderTable(bpTable, ["Breakpoint", "ε"], bpRows);
+      const needSelPct = (epsSel / state.range) * 100;
+      const needAnyPct = (epsAny / state.range) * 100;
+
+      const defensible = epsSel > eps;
+
+      const band = bandSuggestion(state.sorted, eps, k);
+      const labelPick = `Select ${k}`;
+
+      if (defensible) {
+        headline.innerHTML = `<span class="pill ok">Verdict: defensible</span> <strong>${labelPick}</strong> is reasonable under the current assumptions.`;
+        sub.textContent = `Why: your selection stays the same unless score accuracy is worse than about ±${needSelPct.toFixed(2)}% of the score range.`;
+      } else {
+        headline.innerHTML = `<span class="pill warn">Verdict: not defensible</span> A strict <strong>${labelPick}</strong> cutoff is likely fake precision.`;
+        if (band) {
+          sub.textContent = `Action: treat ranks ${band.loRank} to ${band.hiRank} as a tie band, or gather better data before making a hard cutoff.`;
+        } else {
+          sub.textContent = `Action: avoid a hard cutoff unless you can defend the required accuracy. Consider banding items near the boundary.`;
+        }
+      }
+
+      renderTable(bpTable, ["Threshold", "Meaning", "Required accuracy"], [
+        ["Selection threshold", `Keep the selected set (${labelPick}) unchanged`, `±${needSelPct.toFixed(2)}% (±${fmt(epsSel)})`],
+        ["Any-swap threshold", "Prevent any adjacent swap anywhere", `±${needAnyPct.toFixed(2)}% (±${fmt(epsAny)})`]
+      ]);
 
       const cl = clustersAtEps(state.sorted, eps);
       clustersDiv.innerHTML = cl.map((c, idx) => {
@@ -610,7 +836,7 @@
         const from = Math.min(...ranks);
         const to = Math.max(...ranks);
         const items = c.map(x => x.item).join(", ");
-        return `<p><strong>Cluster ${idx + 1} (ranks ${from}–${to})</strong><br>${items}</p>`;
+        return `<p><strong>Band ${idx + 1} (ranks ${from} to ${to})</strong><br>${items}</p>`;
       }).join("");
 
       const nPrev = clamp(Math.floor(Number(previewN.value) || 25), 5, 200);
@@ -621,42 +847,40 @@
       );
 
       drawPlot(scorePlot, state.scores, { yLabel: "score", xLabel: "rank" });
-
-      const gaps = state.bps.gaps;
-      drawPlot(gapPlot, gaps, { yLabel: "gap", xLabel: "adjacent pair", threshold: 2 * eps, thresholdLabel: "2ε" });
+      drawPlot(gapPlot, state.bps.gaps, { yLabel: "gap", xLabel: "adjacent pair", threshold: 2 * eps, thresholdLabel: "2 × wiggle" });
 
       mcOut.style.display = "none";
     }
 
-    function enableMcUI(enabled) {
-      mcN.disabled = !enabled;
-      mcSeed.disabled = !enabled;
-      runMcBtn.disabled = !enabled;
-      if (!enabled) mcOut.style.display = "none";
-    }
-
     function exportJSON() {
       const eps = Number(epsSlider.value) || 0;
-      const k = currentK();
-      const epsTopK = (state.sorted[k - 1].score - state.sorted[k].score) / 2;
+      const k = selectionSize();
+
+      const epsSel = (state.sorted[k - 1].score - state.sorted[k].score) / 2;
+      const epsAny = state.bps.epsAnyFlip;
 
       const result = {
         meta: {
           generated_at: new Date().toISOString(),
-          note: "Robustness check. Computed breakpoints are properties of the score spacing, not estimates of true uncertainty.",
+          note: "Decision hygiene tool. Thresholds derived from score spacing. This does not estimate true uncertainty.",
         },
         input: {
           n_items: state.sorted.length,
-          top_k: k,
-          eps_current: eps,
-          eps_current_pct_of_range: (eps / state.range) * 100,
+          selection_size: k,
+          wiggle_room: eps,
+          wiggle_room_pct_of_range: (eps / state.range) * 100,
         },
-        breakpoints: {
-          eps_any_adjacent_flip: state.bps.epsAnyFlip,
-          eps_break_top_k: epsTopK,
-          eps_break_top_k_standard: state.bps.epsTopK,
+        thresholds: {
+          selection_flip_requires_accuracy_within: {
+            abs: epsSel,
+            pct_of_range: (epsSel / state.range) * 100
+          },
+          any_swap_requires_accuracy_within: {
+            abs: epsAny,
+            pct_of_range: (epsAny / state.range) * 100
+          }
         },
-        clusters_at_eps: clustersAtEps(state.sorted, eps).map(cluster => cluster.map(x => x.item)),
+        tie_bands_at_wiggle_room: clustersAtEps(state.sorted, eps).map(cluster => cluster.map(x => x.item)),
         top_items_preview: state.sorted.slice(0, 25),
       };
 
@@ -664,12 +888,65 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "ranking_stability_result.json";
+      a.download = "ranksmarter_result.json";
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     }
+
+    // Demo + example buttons
+    downloadExampleBtn.addEventListener("click", () => {
+      const csv = [
+        "item,score",
+        "Alpha,92.1",
+        "Beta,91.7",
+        "Gamma,91.6",
+        "Delta,91.4",
+        "Epsilon,91.2",
+        "Zeta,90.9",
+        "Eta,90.8",
+        "Theta,90.6"
+      ].join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "example_scores.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    loadDemoBtn.addEventListener("click", () => {
+      const csv = [
+        "item,score",
+        "Alpha,92.1",
+        "Beta,91.7",
+        "Gamma,91.6",
+        "Delta,91.4",
+        "Epsilon,91.2",
+        "Zeta,90.9",
+        "Eta,90.8",
+        "Theta,90.6"
+      ].join("\n");
+
+      rawGrid = parseCSVRobust(csv);
+      headers = rawGrid[0];
+      dataRows = rawGrid.slice(1);
+
+      fillSelect(itemColSel, headers);
+      fillSelect(scoreColSel, headers);
+
+      itemColSel.value = "0";
+      scoreColSel.value = "1";
+
+      mapRow.style.display = "flex";
+      parseStatus.textContent = `Loaded demo data (${dataRows.length} rows). Click Run.`;
+      parseStatus.className = "muted";
+    });
 
     // File load and mapping
     fileInput.addEventListener("change", async () => {
@@ -692,8 +969,10 @@
         if (scoreGuess !== -1) scoreColSel.value = String(scoreGuess);
 
         mapRow.style.display = "flex";
-        parseStatus.textContent = `Loaded ${dataRows.length} rows, ${headers.length} columns. Map columns and click Apply.`;
+        parseStatus.textContent = `Loaded ${dataRows.length} rows. Confirm columns and click Run.`;
         parseStatus.className = "muted";
+
+        if (itemGuess !== -1 && scoreGuess !== -1) applyMapBtn.click();
       } catch (err) {
         alert(err?.message || String(err));
         mapRow.style.display = "none";
@@ -713,14 +992,18 @@
         controls.style.display = "block";
         out.style.display = "block";
 
-        kInput.max = String(Math.max(1, state.sorted.length - 1));
-        kInput.value = String(clamp(Number(kInput.value) || 5, 1, Math.max(1, state.sorted.length - 1)));
+        // Default selection size mapping
+        const n = state.sorted.length;
+        const defaultPick = Math.min(5, Math.max(1, n - 1));
+        kInput.value = String(defaultPick);
 
         updateEpsControls();
         enableMcUI(mcEnable.checked);
 
         parseStatus.textContent = `Parsed ${state.sorted.length} valid rows.`;
         parseStatus.className = "muted";
+
+        updateOutputs();
       } catch (err) {
         parseStatus.textContent = err?.message || String(err);
         parseStatus.className = "muted err";
@@ -730,7 +1013,8 @@
       }
     });
 
-    // Controls
+    // Main controls
+    pickN.addEventListener("change", () => updateOutputs());
     kInput.addEventListener("input", () => updateOutputs());
 
     epsSlider.addEventListener("input", () => updateOutputs());
@@ -748,6 +1032,7 @@
       exportJSON();
     });
 
+    // Stress test UI
     mcEnable.addEventListener("change", () => enableMcUI(mcEnable.checked));
 
     runMcBtn.addEventListener("click", () => {
@@ -755,25 +1040,25 @@
       const eps = Number(epsSlider.value) || 0;
       const nSamp = clamp(Math.floor(Number(mcN.value) || 2000), 200, 20000);
       const seed = clamp(Math.floor(Number(mcSeed.value) || 12345), 0, 999999999);
-      const k = currentK();
+      const k = selectionSize();
 
       const mc = runMonteCarlo(state.sorted, eps, nSamp, seed, k);
 
-      const setSamePct = (mc.topK.setSameProb * 100).toFixed(1);
-      const overlapPct = (mc.topK.avgOverlapFrac * 100).toFixed(1);
+      const setSamePct = (mc.selection.setSameProb * 100).toFixed(1);
+      const overlapPct = (mc.selection.avgOverlapFrac * 100).toFixed(1);
 
       const invPart = (mc.inversionRate == null)
         ? "Inversion rate skipped (list too large)."
         : `Average pair inversion rate: ${(mc.inversionRate * 100).toFixed(2)}%.`;
 
       mcSummary.textContent =
-        `Monte Carlo stress test at ε = ${fmt(eps)} with ${nSamp} samples (seed ${seed}). ` +
-        `Top-${k} set unchanged: ${setSamePct}%. Avg Top-${k} overlap: ${overlapPct}%. ` +
+        `With the current wiggle room, the selected set stays identical only ${setSamePct}% of the time. ` +
+        `On average, ${overlapPct}% of selected items stay the same. ` +
         invPart;
 
       renderTable(mcTopKTable, ["Metric", "Value"], [
-        [`Top-${k} set unchanged`, `${setSamePct}%`],
-        [`Avg Top-${k} overlap`, `${overlapPct}%`],
+        ["Selected set unchanged", `${setSamePct}%`],
+        ["Average overlap", `${overlapPct}%`],
       ]);
 
       const moveRows = mc.rows.slice(0, 30).map(r => [
@@ -781,15 +1066,15 @@
         r.item,
         (r.stability * 100).toFixed(1) + "%",
         fmt(r.avgAbsMove),
-        `${r.minRank}–${r.maxRank}`
+        `${r.minRank} to ${r.maxRank}`
       ]);
       renderTable(mcMoveTable, ["Orig rank", "Item", "Same-rank %", "Avg |move|", "Observed rank range"], moveRows);
 
       const inclByOrigRank = mc.rows.slice(0, 30).map(r => {
-        const p = mc.topK.inclusionProb.find(x => x.item === r.item)?.prob ?? 0;
+        const p = mc.selection.inclusionProb.find(x => x.item === r.item)?.prob ?? 0;
         return [String(r.origRank), r.item, (p * 100).toFixed(1) + "%"];
       });
-      renderTable(mcInclTable, ["Orig rank", "Item", `P(in Top-${k})`], inclByOrigRank);
+      renderTable(mcInclTable, ["Orig rank", "Item", "P(in selection)"], inclByOrigRank);
 
       mcOut.style.display = "block";
     });
