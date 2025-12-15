@@ -3,338 +3,672 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>RankSmarter | Defensible shortlists</title>
+  <title>RankSmarter | Defensible rankings</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; max-width: 1100px; }
-    .row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-    .rowTop { align-items: flex-start; }
-    .card { border: 1px solid #ddd; border-radius: 12px; padding: 14px; margin-top: 14px; }
-    .muted { color: #555; }
-    .big { font-size: 1.15rem; line-height: 1.35; }
-    .heroTitle { font-size: 2.0rem; margin: 0; }
-    .heroSub { font-size: 1.15rem; margin: 8px 0 0 0; }
-    .pill { display: inline-block; padding: 2px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 0.92rem; margin-right: 8px; margin-top: 6px; }
-    .ok { color: #0b6a2b; }
-    .warn { color: #7a4b00; }
-    .err { color: #8a1f1f; }
-    label { display: inline-block; }
-    select, input[type="number"] { padding: 6px 8px; border-radius: 10px; border: 1px solid #ddd; }
-    input[type="range"] { width: 360px; }
-    button { padding: 9px 12px; border-radius: 10px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    a { color: inherit; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; vertical-align: top; }
-    code { background: #f6f6f6; padding: 2px 6px; border-radius: 8px; }
-    canvas { width: 100%; height: 220px; border: 1px solid #eee; border-radius: 12px; }
-    details summary { cursor: pointer; }
-    .soft { background: #fafafa; }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 0.95rem; }
-    .divider { border: none; border-top: 1px solid #eee; margin: 14px 0; }
+    :root{
+      --bg:#ffffff;
+      --text:#111;
+      --muted:#5a5a5a;
+      --border:#e7e7e7;
+      --soft:#f7f7f8;
+      --soft2:#fbfbfc;
+      --shadow: 0 14px 40px rgba(0,0,0,0.08);
+      --radius: 16px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 34px 22px 70px;
+    }
+
+    /* Header */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .brand{
+      display:flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .brand h1{
+      font-size: 22px;
+      margin:0;
+      letter-spacing: -0.02em;
+    }
+    .tag{
+      font-size: 13px;
+      color: var(--muted);
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--soft2);
+      white-space: nowrap;
+    }
+    .links{
+      display:flex;
+      gap: 14px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+    .link{
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .link:hover{ text-decoration: underline; }
+
+    /* Hero */
+    .hero{
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--soft2), #fff);
+      border-radius: var(--radius);
+      padding: 26px;
+      box-shadow: var(--shadow);
+    }
+    .heroGrid{
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 920px){
+      .heroGrid{ grid-template-columns: 1fr; }
+    }
+    .hero h2{
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+    }
+    .hero p{
+      margin: 12px 0 0 0;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--muted);
+      max-width: 58ch;
+    }
+    .usecases{
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .usecases strong{ color: var(--text); font-weight: 600; }
+
+    .heroRight{
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .steps{
+      display:grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .step{
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      padding: 10px;
+      border-radius: 14px;
+      background: var(--soft);
+      border: 1px solid var(--border);
+    }
+    .num{
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .stepTitle{
+      margin: 0;
+      font-weight: 650;
+      font-size: 14px;
+    }
+    .stepText{
+      margin: 3px 0 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .heroActions{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Cards */
+    .card{
+      margin-top: 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: #fff;
+    }
+    .card.soft{
+      background: var(--soft2);
+    }
+    .row{
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .grow{ flex: 1; }
+
+    /* Controls */
+    label{ display:block; }
+    .labelTop{
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    select, input[type="number"]{
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      background: #fff;
+      min-width: 160px;
+    }
+    input[type="file"]{
+      font-size: 14px;
+    }
+    button{
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover{ background: var(--soft); }
+    button.primary{
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+    button.primary:hover{ background: #000; }
+    button:disabled{
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Verdict */
+    .verdict{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 920px){
+      .verdict{ grid-template-columns: 1fr; }
+    }
+    .panel{
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      background: #fff;
+    }
+    .panel h3{
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .bigLine{
+      margin-top: 10px;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+    .bigLine strong{ font-weight: 750; }
+    .smallLine{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--soft2);
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .dot{ width: 9px; height: 9px; border-radius: 999px; background: #999; display:inline-block; }
+    .dot.ok{ background: #1b7f3b; }
+    .dot.warn{ background: #b36b00; }
+
+    /* Advanced */
+    details summary{
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .advBox{
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      background: var(--soft);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    input[type="range"]{ width: 340px; }
+
+    /* Tables + plots */
+    table{ border-collapse: collapse; width: 100%; }
+    th, td{ border-bottom: 1px solid #efefef; padding: 8px; text-align: left; vertical-align: top; font-size: 14px; }
+    th{ color: var(--muted); font-weight: 600; }
+    canvas{ width: 100%; height: 220px; border: 1px solid var(--border); border-radius: var(--radius); background:#fff; }
+    code{ background: #f2f2f3; padding: 2px 6px; border-radius: 8px; }
 
     /* Modal */
-    .modalBackdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-      display: none; align-items: center; justify-content: center; padding: 18px;
+    .backdrop{
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
       z-index: 999;
     }
-    .modal {
-      background: #fff; border-radius: 14px; max-width: 880px; width: 100%;
-      border: 1px solid #ddd; box-shadow: 0 18px 60px rgba(0,0,0,0.22);
-      max-height: 86vh; overflow: auto;
+    .modal{
+      max-width: 900px; width: 100%;
+      background: #fff;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 70px rgba(0,0,0,0.28);
+      max-height: 86vh;
+      overflow: auto;
     }
-    .modalHeader { display:flex; justify-content: space-between; align-items:center; padding: 14px; border-bottom: 1px solid #eee; }
-    .modalBody { padding: 14px; }
-    .modalClose { border: 1px solid #ddd; background: #fff; border-radius: 10px; padding: 8px 10px; cursor: pointer; }
-    .callout { border-left: 4px solid #ddd; padding: 10px 12px; background: #fbfbfb; border-radius: 10px; }
+    .modalHeader{
+      padding: 14px 16px;
+      border-bottom: 1px solid #eee;
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+    }
+    .modalTitle{ margin: 0; font-size: 16px; font-weight: 700; }
+    .modalBody{ padding: 16px; color: var(--text); }
+    .modalBody p{ color: var(--muted); line-height: 1.55; }
+    .closeBtn{
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+    }
+    .callout{
+      border: 1px solid var(--border);
+      background: var(--soft2);
+      border-radius: 14px;
+      padding: 12px 12px;
+      color: var(--muted);
+    }
+    .muted{ color: var(--muted); }
+
+    .hr{ border:none; border-top: 1px solid #eee; margin: 14px 0; }
   </style>
 </head>
 <body>
-  <h1 class="heroTitle">RankSmarter</h1>
-  <p class="heroSub">
-    Defensible shortlists, not fake precision.
-  </p>
-
-  <div class="card soft" style="max-width: 980px;">
-    <div class="row">
-      <span class="pill">Hiring scorecards</span>
-      <span class="pill">Vendor selection</span>
-      <span class="pill">Product prioritisation</span>
-      <span class="pill">Investment shortlists</span>
-    </div>
-
-    <p style="margin: 12px 0 0 0; max-width: 940px;">
-      Upload your scores. Choose how many you are selecting. This tool tells you whether a strict cutoff is defensible, or whether you should treat the boundary as a tie band.
-    </p>
-
-    <p class="muted" style="margin: 10px 0 0 0;">
-      Output is a plain-English decision rule, for example:
-      <br>
-      <strong>“Unless you are confident scores are accurate within ±0.5%, treat the Top 3 as equal.”</strong>
-      <span style="margin-left: 10px;">
-        <a href="#" id="openMath">Explain the maths</a>
-      </span>
-    </p>
-  </div>
-
-  <div class="card">
-    <div class="row rowTop">
-      <div style="min-width: 320px;">
-        <label style="display:block;">
-          <strong>Upload scores (CSV)</strong><br>
-          <input id="file" type="file" accept=".csv,text/csv" />
-        </label>
-        <div class="muted" style="margin-top:8px;">
-          One row per item. One numeric score per row.
-        </div>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <h1>RankSmarter</h1>
+        <span class="tag">Local only, your data never leaves the browser</span>
       </div>
-
-      <div style="flex: 1;">
-        <div class="muted" style="margin-bottom: 10px;">
-          Expected columns like <code>item</code> and <code>score</code>. If yours differ, you can map columns after upload.
-        </div>
-        <div class="row" style="gap: 10px;">
-          <button id="loadDemo">Try demo data</button>
-          <button id="downloadExample">Download example CSV</button>
-        </div>
-
-        <details style="margin-top: 10px;">
-          <summary class="muted">What CSV format do you want?</summary>
-          <div class="muted" style="margin-top: 8px;">
-            Two columns is enough:
-            <ul>
-              <li><code>item</code> is a name or identifier (candidate, vendor, idea).</li>
-              <li><code>score</code> is a number (higher is better).</li>
-            </ul>
-            If your headers differ, you can map the columns after upload.
-          </div>
-        </details>
+      <div class="links">
+        <a class="link" href="#" id="openMath">Explain the maths</a>
+        <a class="link" href="#" id="downloadExample">Example CSV</a>
+        <a class="link" href="#" id="loadDemo">Try demo</a>
       </div>
     </div>
 
-    <div id="mapRow" class="row" style="margin-top: 12px; display:none;">
-      <label>Item column<br><select id="itemCol"></select></label>
-      <label>Score column<br><select id="scoreCol"></select></label>
-      <label>Rows to preview<br><input id="previewN" type="number" min="5" max="200" step="5" value="25"></label>
-      <button id="applyMap">Run</button>
-      <span id="parseStatus" class="muted"></span>
-    </div>
-  </div>
-
-  <div id="controls" class="card" style="display:none;">
-    <div class="row">
-      <label><strong>How many are you selecting?</strong><br>
-        <select id="pickN">
-          <option value="1">Select 1</option>
-          <option value="3">Select 3</option>
-          <option value="5" selected>Select 5</option>
-          <option value="10">Select 10</option>
-          <option value="custom">Custom…</option>
-        </select>
-      </label>
-
-      <label id="customPickWrap" style="display:none;"><strong>Custom selection size</strong><br>
-        <input id="k" type="number" min="1" step="1" value="5">
-      </label>
-
-      <div style="flex:1;"></div>
-
-      <button id="exportJson">Export result JSON</button>
-    </div>
-
-    <hr class="divider">
-
-    <details>
-      <summary class="muted">Advanced (optional)</summary>
-      <div class="row" style="margin-top: 10px;">
-        <label>Assumed score wiggle room<br>
-          <input id="eps" type="range" min="0" max="1" step="0.001" value="0">
-        </label>
-
+    <div class="hero">
+      <div class="heroGrid">
         <div>
-          <div>Wiggle room: <strong id="epsLabel">0.000</strong></div>
-          <div class="muted">or <span id="epsPct">0.00%</span> of score range</div>
-        </div>
-
-        <label>Wiggle room (% of range)<br>
-          <input id="epsPctInput" type="number" min="0" max="200" step="0.1" value="0">
-        </label>
-      </div>
-
-      <div class="row" style="margin-top: 10px;">
-        <label><input id="mcEnable" type="checkbox"> Run stress test</label>
-        <label>Samples<br><input id="mcN" type="number" min="200" max="20000" step="200" value="2000" disabled></label>
-        <label>Seed<br><input id="mcSeed" type="number" min="0" max="999999999" step="1" value="12345" disabled></label>
-        <button id="runMc" disabled>Run stress test</button>
-        <span class="muted">Simulates many small simultaneous score errors within the wiggle room.</span>
-      </div>
-    </details>
-  </div>
-
-  <div id="out" class="card" style="display:none;">
-    <div class="row">
-      <div style="flex: 1;">
-        <div id="headline" class="big"></div>
-        <p id="sub" class="muted" style="margin-top: 8px;"></p>
-      </div>
-      <div style="text-align:right;">
-        <a href="#" id="openMath2" class="muted">Explain the maths</a>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card" style="margin-top:0;">
-        <h3>Decision thresholds</h3>
-        <table id="bpTable"></table>
-        <p class="muted" style="margin-top: 10px;">
-          “Selection threshold” is the accuracy needed for your selected set not to change.
-          “Any-swap threshold” is stricter, it requires no adjacent swaps anywhere.
-        </p>
-      </div>
-
-      <div class="card" style="margin-top:0;">
-        <h3>Tie bands at current wiggle room</h3>
-        <div class="muted" style="margin-top:-6px; margin-bottom:10px;">
-          Items in the same band are not reliably separable at this assumed wiggle room.
-        </div>
-        <div id="clusters"></div>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card" style="margin-top:0;">
-        <h3>Scores (sorted)</h3>
-        <canvas id="scorePlot" width="1000" height="260"></canvas>
-        <p class="muted">Dense packing near the selection boundary often means an unstable cutoff.</p>
-      </div>
-
-      <div class="card" style="margin-top:0;">
-        <h3>Adjacent gaps</h3>
-        <canvas id="gapPlot" width="1000" height="260"></canvas>
-        <p class="muted">Gaps below <code>2 × wiggle room</code> indicate adjacent items can swap under reasonable score error.</p>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:14px;">
-      <h3>Preview (sorted)</h3>
-      <table id="preview"></table>
-    </div>
-
-    <div id="mcOut" class="card" style="display:none;">
-      <h3>Stress test results</h3>
-      <p id="mcSummary" class="big"></p>
-
-      <div class="grid">
-        <div class="card" style="margin-top:0;">
-          <h4>Selection stability</h4>
-          <table id="mcTopKTable"></table>
-          <p class="muted">
-            “Selected set unchanged” is the fraction of simulations where the selected items exactly match the original selection.
-            “Average overlap” is the average fraction of original selected items still present.
+          <h2>Stop pretending your ranking is real.</h2>
+          <p>
+            Rankings often look precise, but small scoring errors can change who gets selected.
+            This tool is a mathematical “reality check” that tells you whether a cutoff is defensible,
+            and if not, exactly where you should treat the boundary as a tie band.
           </p>
+          <div class="usecases">
+            <strong>Use it for:</strong> hiring scorecards, vendor selection, prioritisation, investment shortlists.
+          </div>
+          <div class="heroActions">
+            <button class="primary" id="jumpUpload">Upload scores</button>
+            <button id="openMathHero">Explain the maths</button>
+          </div>
         </div>
 
-        <div class="card" style="margin-top:0;">
-          <h4>Per-item movement (first 30)</h4>
-          <table id="mcMoveTable"></table>
-          <p class="muted">Same-rank % means the item stayed in the exact same rank position.</p>
+        <div class="heroRight">
+          <ol class="steps">
+            <li class="step">
+              <div class="num">1</div>
+              <div>
+                <p class="stepTitle">Upload a CSV of names and scores</p>
+                <p class="stepText">Two columns is enough: item, score.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="num">2</div>
+              <div>
+                <p class="stepTitle">Tell us how many you are selecting</p>
+                <p class="stepText">Select 1, 3, 5, 10, or custom.</p>
+              </div>
+            </li>
+            <li class="step">
+              <div class="num">3</div>
+              <div>
+                <p class="stepTitle">Get a plain-English verdict</p>
+                <p class="stepText">Defensible cutoff, or tie band recommendation.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div id="uploadCard" class="card">
+      <div class="row" style="align-items:flex-start;">
+        <div style="min-width: 340px;">
+          <div class="labelTop">Upload scores (CSV)</div>
+          <input id="file" type="file" accept=".csv,text/csv" />
+          <div class="muted" style="margin-top: 8px; font-size: 14px;">
+            One row per item. One numeric score per row.
+          </div>
+        </div>
+
+        <div class="grow">
+          <div class="muted" style="font-size:14px; margin-top: 2px;">
+            Expected columns like <code>item</code> and <code>score</code>. If yours differ, you can map columns after upload.
+          </div>
+
+          <div id="mapRow" class="row" style="margin-top: 12px; display:none;">
+            <div>
+              <div class="labelTop">Item column</div>
+              <select id="itemCol"></select>
+            </div>
+            <div>
+              <div class="labelTop">Score column</div>
+              <select id="scoreCol"></select>
+            </div>
+            <div>
+              <div class="labelTop">Rows to preview</div>
+              <input id="previewN" type="number" min="5" max="200" step="5" value="25">
+            </div>
+            <div style="margin-top: 22px;">
+              <button class="primary" id="applyMap">Run</button>
+            </div>
+            <div style="margin-top: 22px;">
+              <span id="parseStatus" class="muted"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="controls" class="card soft" style="display:none;">
+      <div class="row">
+        <div>
+          <div class="labelTop">How many are you selecting?</div>
+          <select id="pickN">
+            <option value="1">Select 1</option>
+            <option value="3">Select 3</option>
+            <option value="5" selected>Select 5</option>
+            <option value="10">Select 10</option>
+            <option value="custom">Custom…</option>
+          </select>
+        </div>
+
+        <div id="customPickWrap" style="display:none;">
+          <div class="labelTop">Custom selection size</div>
+          <input id="k" type="number" min="1" step="1" value="5">
+        </div>
+
+        <div class="grow"></div>
+
+        <button id="exportJson">Export result (JSON)</button>
+      </div>
+
+      <details style="margin-top: 12px;">
+        <summary>Advanced</summary>
+        <div class="advBox">
+          <div class="muted" style="margin-bottom: 10px;">
+            “Wiggle room” is the maximum score error you are willing to admit. If you do not know, start with a modest default.
+          </div>
+
+          <div class="row">
+            <div>
+              <div class="labelTop">Wiggle room preset</div>
+              <select id="preset">
+                <option value="0.25">Scores are very consistent (±0.25% of range)</option>
+                <option value="0.50" selected>Scores are somewhat subjective (±0.50% of range)</option>
+                <option value="1.00">Scores are noisy (±1.00% of range)</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </div>
+
+            <div id="customEpsWrap" style="display:none;">
+              <div class="labelTop">Custom wiggle room (% of range)</div>
+              <input id="epsPctInput" type="number" min="0" max="200" step="0.1" value="0.50">
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 10px;">
+            <div>
+              <div class="labelTop">Wiggle room slider (absolute)</div>
+              <input id="eps" type="range" min="0" max="1" step="0.001" value="0">
+            </div>
+            <div>
+              <div class="muted">Current wiggle room</div>
+              <div style="margin-top: 4px;">
+                <strong id="epsLabel">0.000</strong>
+                <span class="muted"> (</span><span id="epsPct">0.00%</span><span class="muted"> of score range)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <label style="display:flex; gap: 10px; align-items:center;">
+              <input id="mcEnable" type="checkbox">
+              <span>Run stress test (optional)</span>
+            </label>
+            <div>
+              <div class="labelTop">Samples</div>
+              <input id="mcN" type="number" min="200" max="20000" step="200" value="2000" disabled>
+            </div>
+            <div>
+              <div class="labelTop">Seed</div>
+              <input id="mcSeed" type="number" min="0" max="999999999" step="1" value="12345" disabled>
+            </div>
+            <div style="margin-top: 22px;">
+              <button id="runMc" disabled>Run stress test</button>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <div id="out" class="card" style="display:none;">
+      <div class="verdict">
+        <div class="panel">
+          <h3>Verdict</h3>
+          <div class="bigLine" id="verdictLine"></div>
+          <div class="pill" id="verdictPill" style="display:none;"></div>
+        </div>
+
+        <div class="panel">
+          <h3>What to do</h3>
+          <div class="bigLine" id="actionLine"></div>
+          <div class="smallLine" id="whyLine"></div>
         </div>
       </div>
 
-      <div class="card" style="margin-top:14px;">
-        <h4>Selection inclusion probabilities (first 30 by original rank)</h4>
-        <table id="mcInclTable"></table>
-        <p class="muted">P(in selection) is how often an item appears in the selected set under score error within the wiggle room.</p>
+      <div class="row" style="margin-top: 14px; justify-content: space-between;">
+        <div class="muted" style="font-size: 14px;">
+          This does not claim “true uncertainty”. It answers: “If scoring could be off by this much, would the decision change?”
+        </div>
+        <div>
+          <a href="#" id="openMath2" class="link">Explain the maths</a>
+        </div>
       </div>
 
-      <p class="muted">This is a stress test, not a claim about true uncertainty. It answers: “If scores are this noisy, how often would the decision change?”</p>
+      <div class="card" style="margin-top: 14px;">
+        <div class="row" style="align-items:flex-start;">
+          <div class="grow">
+            <h3 style="margin:0; font-size: 16px;">Decision thresholds</h3>
+            <div class="muted" style="margin-top: 6px; font-size: 14px;">
+              “Selection threshold” is the score accuracy needed for your selected set not to change.
+            </div>
+            <table id="bpTable" style="margin-top: 10px;"></table>
+          </div>
+          <div style="width: 1px; background: #eee; margin: 0 12px;"></div>
+          <div class="grow">
+            <h3 style="margin:0; font-size: 16px;">Tie bands</h3>
+            <div class="muted" style="margin-top: 6px; font-size: 14px;">
+              Items in the same band cannot be reliably separated at the current wiggle room.
+            </div>
+            <div id="clusters" style="margin-top: 10px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 14px;">
+        <div class="row">
+          <div class="grow">
+            <h3 style="margin:0; font-size: 16px;">Scores (sorted)</h3>
+            <div class="muted" style="margin-top: 6px; font-size: 14px;">
+              Dense packing near the selection boundary often means an unstable cutoff.
+            </div>
+            <canvas id="scorePlot" width="1000" height="260" style="margin-top: 10px;"></canvas>
+          </div>
+          <div class="grow">
+            <h3 style="margin:0; font-size: 16px;">Adjacent gaps</h3>
+            <div class="muted" style="margin-top: 6px; font-size: 14px;">
+              Gaps below <code>2 × wiggle room</code> indicate adjacent items can swap.
+            </div>
+            <canvas id="gapPlot" width="1000" height="260" style="margin-top: 10px;"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 14px;">
+        <h3 style="margin:0; font-size: 16px;">Preview (sorted)</h3>
+        <table id="preview" style="margin-top: 10px;"></table>
+      </div>
+
+      <div id="mcOut" class="card" style="display:none; margin-top: 14px;">
+        <h3 style="margin:0; font-size: 16px;">Stress test results</h3>
+        <div id="mcSummary" class="bigLine" style="margin-top: 10px;"></div>
+
+        <div class="row" style="margin-top: 12px; gap: 14px; align-items:flex-start;">
+          <div class="grow panel">
+            <h3>Selection stability</h3>
+            <table id="mcTopKTable" style="margin-top: 10px;"></table>
+            <div class="muted" style="margin-top: 10px;">
+              “Selected set unchanged” is how often the chosen set is identical under score error.
+            </div>
+          </div>
+          <div class="grow panel">
+            <h3>Per-item movement (first 30)</h3>
+            <table id="mcMoveTable" style="margin-top: 10px;"></table>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 14px;">
+          <h3>Selection inclusion probabilities (first 30)</h3>
+          <table id="mcInclTable" style="margin-top: 10px;"></table>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Maths modal -->
-  <div id="mathBackdrop" class="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="mathTitle">
+  <div id="mathBackdrop" class="backdrop" role="dialog" aria-modal="true" aria-labelledby="mathTitle">
     <div class="modal">
       <div class="modalHeader">
         <div>
-          <strong id="mathTitle">Explain the maths</strong>
-          <div class="muted" style="margin-top: 4px;">Optional detail. The main output remains the plain-English verdict.</div>
+          <div class="modalTitle" id="mathTitle">Explain the maths</div>
+          <div class="muted" style="font-size: 13px; margin-top: 2px;">Optional detail. The main output remains the plain-English verdict.</div>
         </div>
-        <button class="modalClose" id="closeMath">Close</button>
+        <button class="closeBtn" id="closeMath">Close</button>
       </div>
       <div class="modalBody">
         <div class="callout">
-          <strong>What the tool is really doing</strong><br>
-          You have a list of items with scores. You want to select N items. The question is whether the ranking supports that decision or whether it is “fake precision”.
+          <strong>What this tool proves</strong><br>
+          If your scores can be wrong by up to <code>±ε</code>, the tool can determine whether the selection boundary can flip,
+          and can compute the exact score accuracy required to prevent that flip.
         </div>
 
-        <h3 style="margin-top: 16px;">1) The model: bounded score error</h3>
+        <h3 style="margin-top: 16px;">1) Model: bounded score error</h3>
         <p>
-          We assume each score may be wrong by up to a “wiggle room” amount, written as <span class="kbd">±ε</span>.
-          This is not claiming the true error distribution. It is a decision stress model:
-          <br>
-          “If scores could be off by up to this much, would your decision change?”
+          Each score may be wrong by at most a “wiggle room” amount, written <code>±ε</code>.
+          This is not claiming the true distribution of error.
+          It is a stress model for decision hygiene:
+          “If scoring could be off by this much, would the decision change?”
         </p>
 
-        <h3>2) The selection threshold (the one you care about)</h3>
+        <h3>2) The selection threshold</h3>
         <p>
-          Let <span class="kbd">s₁ ≥ s₂ ≥ …</span> be your sorted scores.
-          If you are selecting N items, the selection boundary is between rank <span class="kbd">N</span> and <span class="kbd">N+1</span>.
+          Sort scores so <code>s₁ ≥ s₂ ≥ …</code>.
+          If you are selecting <code>N</code> items, the boundary is between rank <code>N</code> and <code>N+1</code>.
+          Let the gap be <code>g = s_N − s_{N+1}</code>.
         </p>
         <p>
-          The key gap is <span class="kbd">g = s_N − s_{N+1}</span>.
-          Under bounded error <span class="kbd">±ε</span>, the “inside” item could drop by <span class="kbd">ε</span> and the “outside” item could rise by <span class="kbd">ε</span>.
+          Under bounded error, the inside item could drop by <code>ε</code> and the outside item could rise by <code>ε</code>.
           The boundary can flip when:
         </p>
-        <p class="kbd">
-          s_N − ε ≤ s_{N+1} + ε
+        <p><code>s_N − ε ≤ s_{N+1} + ε</code></p>
+        <p>
+          Rearranging gives the critical threshold:
+          <br><code>ε ≥ (s_N − s_{N+1}) / 2</code>
         </p>
         <p>
-          Rearranging gives:
-        </p>
-        <p class="kbd">
-          ε ≥ (s_N − s_{N+1}) / 2
-        </p>
-        <p>
-          So the tool reports the critical threshold:
-          <br>
-          <strong>Required accuracy to keep the selected set unchanged = ±(gap / 2)</strong>
-          <br>
-          and also expresses it as a percent of the score range for readability.
+          That is why the tool can say, precisely:
+          “To keep this selection stable, your scoring must be accurate within ±X.”
         </p>
 
-        <h3>3) The any-swap threshold (strict, usually secondary)</h3>
+        <h3>3) Tie bands</h3>
         <p>
-          If you want absolutely no adjacent swaps anywhere in the ranking, the strict condition is based on the smallest adjacent gap in the entire list.
-          Let <span class="kbd">g_min</span> be the minimum of all adjacent gaps. Then:
-        </p>
-        <p class="kbd">
-          ε ≥ g_min / 2
-        </p>
-        <p>
-          This is why the tool shows two thresholds. The selection threshold is about your decision. The any-swap threshold is about total ordering everywhere.
+          Two adjacent items are not reliably separable at wiggle room <code>ε</code> if their gap is ≤ <code>2ε</code>.
+          The tool groups consecutive items into tie bands by that rule.
         </p>
 
-        <h3>4) Tie bands</h3>
+        <h3>4) Stress test</h3>
         <p>
-          Two adjacent items are not reliably separable under bounded error if their gap is at most <span class="kbd">2ε</span>.
-          The tool groups consecutive items into bands where each adjacent gap is ≤ <span class="kbd">2ε</span>.
-          A band is a set of ranks where the internal order is not defensible under the assumed wiggle room.
-        </p>
-
-        <h3>5) Stress test</h3>
-        <p>
-          The stress test adds random noise in the range <span class="kbd">[-ε, +ε]</span> to each score and re-sorts many times.
-          It reports how often the selected set stays identical and how often each item is included.
-          This captures the combinatorial effect of many small simultaneous perturbations, which is not easy to reason about by eye.
-        </p>
-
-        <hr class="divider">
-
-        <p class="muted">
-          Practical interpretation: the tool converts “close scores” into an explicit precision claim.
-          If you cannot defend that precision, do not pretend the boundary is real.
+          The stress test adds random noise in <code>[-ε, +ε]</code> to every score and re-sorts many times.
+          It reports how often the selected set stays identical and which items are borderline.
+          This captures the combinatorial effect of many small simultaneous errors.
         </p>
       </div>
     </div>
@@ -358,9 +692,7 @@
             const next = text[i + 1];
             if (next === '"') { field += '"'; i++; }
             else { inQuotes = false; }
-          } else {
-            field += c;
-          }
+          } else field += c;
         } else {
           if (c === '"') inQuotes = true;
           else if (c === ",") { row.push(field); field = ""; }
@@ -377,18 +709,18 @@
       return cleaned;
     }
 
-    function toLowerTrim(s) { return (s ?? "").toString().trim().toLowerCase(); }
+    function toLowerTrim(s){ return (s ?? "").toString().trim().toLowerCase(); }
 
-    function guessColumn(headers, candidates) {
+    function guessColumn(headers, candidates){
       const lower = headers.map(toLowerTrim);
-      for (const c of candidates) {
+      for (const c of candidates){
         const idx = lower.indexOf(c);
         if (idx !== -1) return idx;
       }
       return -1;
     }
 
-    function safeNumber(x) {
+    function safeNumber(x){
       if (x == null) return null;
       const s = x.toString().trim();
       if (!s) return null;
@@ -396,29 +728,29 @@
       return Number.isFinite(n) ? n : null;
     }
 
-    function sortDesc(rows) { return [...rows].sort((a, b) => b.score - a.score); }
+    function sortDesc(rows){ return [...rows].sort((a,b)=>b.score-a.score); }
 
-    function computeBreakpoints(sorted) {
+    function computeBreakpoints(sorted){
       const n = sorted.length;
       const gaps = [];
-      for (let i = 0; i < n - 1; i++) gaps.push(sorted[i].score - sorted[i + 1].score);
+      for (let i=0;i<n-1;i++) gaps.push(sorted[i].score - sorted[i+1].score);
       const epsAnyFlip = Math.min(...gaps) / 2;
       return { gaps, epsAnyFlip };
     }
 
-    function clustersAtEps(sorted, eps) {
+    function clustersAtEps(sorted, eps){
       const clusters = [];
       let current = [sorted[0]];
-      for (let i = 0; i < sorted.length - 1; i++) {
-        const gap = sorted[i].score - sorted[i + 1].score;
-        if (gap <= 2 * eps) current.push(sorted[i + 1]);
-        else { clusters.push(current); current = [sorted[i + 1]]; }
+      for (let i=0;i<sorted.length-1;i++){
+        const gap = sorted[i].score - sorted[i+1].score;
+        if (gap <= 2*eps) current.push(sorted[i+1]);
+        else { clusters.push(current); current = [sorted[i+1]]; }
       }
       clusters.push(current);
       return clusters;
     }
 
-    function fmt(x) {
+    function fmt(x){
       if (!Number.isFinite(x)) return "n/a";
       const ax = Math.abs(x);
       if (ax >= 100) return x.toFixed(1);
@@ -426,100 +758,105 @@
       return x.toFixed(4);
     }
 
-    function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+    function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
 
-    function renderTable(el, headers, rows) {
+    function renderTable(el, headers, rows){
       el.innerHTML = "";
       const thead = document.createElement("thead");
       const trh = document.createElement("tr");
-      headers.forEach(h => { const th = document.createElement("th"); th.textContent = h; trh.appendChild(th); });
+      headers.forEach(h=>{
+        const th = document.createElement("th");
+        th.textContent = h;
+        trh.appendChild(th);
+      });
       thead.appendChild(trh);
       el.appendChild(thead);
 
       const tbody = document.createElement("tbody");
-      rows.forEach(r => {
+      rows.forEach(r=>{
         const tr = document.createElement("tr");
-        r.forEach(cell => { const td = document.createElement("td"); td.textContent = cell; tr.appendChild(td); });
+        r.forEach(cell=>{
+          const td = document.createElement("td");
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
         tbody.appendChild(tr);
       });
       el.appendChild(tbody);
     }
 
     // ---------------------------
-    // Simple plotting helpers (canvas)
+    // Plotting
     // ---------------------------
-    function drawPlot(canvas, ys, opts) {
+    function drawPlot(canvas, ys, opts){
       const ctx = canvas.getContext("2d");
       const w = canvas.width, h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
+      ctx.clearRect(0,0,w,h);
 
-      const padL = 52, padR = 16, padT = 16, padB = 36;
-      const innerW = w - padL - padR;
-      const innerH = h - padT - padB;
+      const padL=52, padR=14, padT=16, padB=34;
+      const innerW = w-padL-padR;
+      const innerH = h-padT-padB;
 
       const n = ys.length;
       const yMin = Math.min(...ys);
       const yMax = Math.max(...ys);
-      const ySpan = (yMax - yMin) || 1;
+      const ySpan = (yMax-yMin) || 1;
 
-      ctx.strokeStyle = "#999";
+      ctx.strokeStyle = "#bbb";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(padL, padT);
-      ctx.lineTo(padL, padT + innerH);
-      ctx.lineTo(padL + innerW, padT + innerH);
+      ctx.moveTo(padL,padT);
+      ctx.lineTo(padL,padT+innerH);
+      ctx.lineTo(padL+innerW,padT+innerH);
       ctx.stroke();
 
-      ctx.fillStyle = "#444";
-      ctx.font = "14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-      ctx.fillText(opts.yLabel || "", 8, 18);
-      ctx.fillText(opts.xLabel || "", padL + innerW - 160, padT + innerH + 26);
+      ctx.fillStyle = "#666";
+      ctx.font = "13px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
+      ctx.fillText(opts.yLabel || "", 10, 16);
 
       const ticks = 4;
-      for (let t = 0; t <= ticks; t++) {
-        const y = padT + innerH - (t / ticks) * innerH;
-        const v = yMin + (t / ticks) * ySpan;
-        ctx.strokeStyle = "#eee";
+      for (let t=0;t<=ticks;t++){
+        const y = padT+innerH-(t/ticks)*innerH;
+        const v = yMin+(t/ticks)*ySpan;
+
+        ctx.strokeStyle = "#f0f0f0";
         ctx.beginPath();
-        ctx.moveTo(padL, y);
-        ctx.lineTo(padL + innerW, y);
+        ctx.moveTo(padL,y);
+        ctx.lineTo(padL+innerW,y);
         ctx.stroke();
 
-        ctx.fillStyle = "#666";
-        ctx.fillText(fmt(v), 10, y + 5);
+        ctx.fillStyle = "#777";
+        ctx.fillText(fmt(v), 10, y+4);
       }
 
       ctx.fillStyle = "#111";
-      for (let i = 0; i < n; i++) {
-        const x = padL + (n === 1 ? innerW / 2 : (i / (n - 1)) * innerW);
-        const y = padT + innerH - ((ys[i] - yMin) / ySpan) * innerH;
+      for (let i=0;i<n;i++){
+        const x = padL + (n===1 ? innerW/2 : (i/(n-1))*innerW);
+        const y = padT + innerH - ((ys[i]-yMin)/ySpan)*innerH;
         ctx.beginPath();
-        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.arc(x,y,2.4,0,Math.PI*2);
         ctx.fill();
       }
 
-      if (opts.threshold != null) {
+      if (opts.threshold != null){
         const tv = opts.threshold;
-        const y = padT + innerH - ((tv - yMin) / ySpan) * innerH;
+        const y = padT + innerH - ((tv-yMin)/ySpan)*innerH;
         ctx.strokeStyle = "#b66";
-        ctx.setLineDash([6, 4]);
+        ctx.setLineDash([6,4]);
         ctx.beginPath();
-        ctx.moveTo(padL, y);
-        ctx.lineTo(padL + innerW, y);
+        ctx.moveTo(padL,y);
+        ctx.lineTo(padL+innerW,y);
         ctx.stroke();
         ctx.setLineDash([]);
-
-        ctx.fillStyle = "#b66";
-        ctx.fillText(opts.thresholdLabel || "threshold", padL + 6, clamp(y - 6, 14, h - 10));
       }
     }
 
     // ---------------------------
     // Monte Carlo stress test
     // ---------------------------
-    function mulberry32(seed) {
+    function mulberry32(seed){
       let a = seed >>> 0;
-      return function() {
+      return function(){
         a |= 0; a = a + 0x6D2B79F5 | 0;
         let t = Math.imul(a ^ a >>> 15, 1 | a);
         t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
@@ -527,101 +864,82 @@
       };
     }
 
-    function runMonteCarlo(sorted, eps, nSamp, seed, k) {
+    function runMonteCarlo(sorted, eps, nSamp, seed, k){
       const rng = mulberry32(seed);
       const n = sorted.length;
 
-      const selected0 = new Set(sorted.slice(0, k).map(r => r.item));
+      const selected0 = new Set(sorted.slice(0,k).map(r=>r.item));
       let setSameCount = 0;
       let overlapSum = 0;
 
       const inCount = new Map();
-      sorted.forEach(r => inCount.set(r.item, 0));
+      sorted.forEach(r=>inCount.set(r.item, 0));
 
       const stats = new Map();
-      sorted.forEach((r, i) => {
-        stats.set(r.item, { origRank: i + 1, same: 0, minRank: i + 1, maxRank: i + 1, sumAbs: 0 });
+      sorted.forEach((r,i)=>{
+        stats.set(r.item, { origRank:i+1, same:0, minRank:i+1, maxRank:i+1, sumAbs:0 });
       });
 
-      let inversionCount = 0;
-      const totalPairs = n * (n - 1) / 2;
-
-      for (let s = 0; s < nSamp; s++) {
-        const pert = sorted.map(r => {
+      for (let s=0;s<nSamp;s++){
+        const pert = sorted.map(r=>{
           const u = rng();
-          const delta = (u * 2 - 1) * eps;
-          return { item: r.item, score: r.score + delta };
-        }).sort((a, b) => b.score - a.score);
+          const delta = (u*2 - 1) * eps;
+          return { item:r.item, score:r.score + delta };
+        }).sort((a,b)=>b.score-a.score);
 
-        const selectedT = pert.slice(0, k).map(r => r.item);
+        const selectedT = pert.slice(0,k).map(r=>r.item);
         const selectedSet = new Set(selectedT);
 
-        // exact set match
         let same = true;
-        for (const it of selected0) { if (!selectedSet.has(it)) { same = false; break; } }
+        for (const it of selected0){
+          if (!selectedSet.has(it)){ same = false; break; }
+        }
         if (same && selectedSet.size === selected0.size) setSameCount++;
 
-        // overlap
         let overlap = 0;
         for (const it of selectedSet) if (selected0.has(it)) overlap++;
         overlapSum += overlap;
 
-        // inclusion
         for (const it of selectedSet) inCount.set(it, inCount.get(it) + 1);
 
-        // movement
-        const rankByItem = new Map();
-        pert.forEach((r, idx) => rankByItem.set(r.item, idx + 1));
-
-        pert.forEach((r, idx) => {
+        pert.forEach((r,idx)=>{
           const st = stats.get(r.item);
-          const rk = idx + 1;
+          const rk = idx+1;
           if (rk === st.origRank) st.same++;
           st.minRank = Math.min(st.minRank, rk);
           st.maxRank = Math.max(st.maxRank, rk);
           st.sumAbs += Math.abs(rk - st.origRank);
         });
-
-        if (n <= 200) {
-          for (let i = 0; i < n; i++) {
-            for (let j = i + 1; j < n; j++) {
-              const itemI = sorted[i].item;
-              const itemJ = sorted[j].item;
-              if (rankByItem.get(itemI) > rankByItem.get(itemJ)) inversionCount++;
-            }
-          }
-        }
       }
 
       const rows = [];
-      stats.forEach((st, item) => {
+      stats.forEach((st,item)=>{
         rows.push({
           item,
           origRank: st.origRank,
-          stability: st.same / nSamp,
-          avgAbsMove: st.sumAbs / nSamp,
+          stability: st.same/nSamp,
+          avgAbsMove: st.sumAbs/nSamp,
           minRank: st.minRank,
           maxRank: st.maxRank
         });
       });
-      rows.sort((a, b) => a.origRank - b.origRank);
-
-      const inversionRate = (n <= 200) ? inversionCount / (nSamp * totalPairs) : null;
+      rows.sort((a,b)=>a.origRank-b.origRank);
 
       const selection = {
         k,
-        setSameProb: setSameCount / nSamp,
-        avgOverlapFrac: (overlapSum / nSamp) / k,
-        inclusionProb: Array.from(inCount.entries()).map(([item, cnt]) => ({ item, prob: cnt / nSamp }))
-          .sort((a, b) => b.prob - a.prob)
+        setSameProb: setSameCount/nSamp,
+        avgOverlapFrac: (overlapSum/nSamp)/k,
+        inclusionProb: Array.from(inCount.entries()).map(([item,cnt])=>({ item, prob: cnt/nSamp }))
+          .sort((a,b)=>b.prob-a.prob)
       };
 
-      return { rows, inversionRate, nSamp, seed, eps, selection };
+      return { rows, nSamp, seed, eps, selection };
     }
 
     // ---------------------------
-    // UI elements
+    // UI wiring
     // ---------------------------
+    const jumpUpload = document.getElementById("jumpUpload");
     const fileInput = document.getElementById("file");
     const mapRow = document.getElementById("mapRow");
     const itemColSel = document.getElementById("itemCol");
@@ -634,12 +952,14 @@
     const pickN = document.getElementById("pickN");
     const customPickWrap = document.getElementById("customPickWrap");
     const kInput = document.getElementById("k");
+    const exportJsonBtn = document.getElementById("exportJson");
 
+    const preset = document.getElementById("preset");
+    const customEpsWrap = document.getElementById("customEpsWrap");
     const epsSlider = document.getElementById("eps");
     const epsLabel = document.getElementById("epsLabel");
     const epsPct = document.getElementById("epsPct");
     const epsPctInput = document.getElementById("epsPctInput");
-    const exportJsonBtn = document.getElementById("exportJson");
 
     const mcEnable = document.getElementById("mcEnable");
     const mcN = document.getElementById("mcN");
@@ -647,8 +967,11 @@
     const runMcBtn = document.getElementById("runMc");
 
     const out = document.getElementById("out");
-    const headline = document.getElementById("headline");
-    const sub = document.getElementById("sub");
+    const verdictLine = document.getElementById("verdictLine");
+    const verdictPill = document.getElementById("verdictPill");
+    const actionLine = document.getElementById("actionLine");
+    const whyLine = document.getElementById("whyLine");
+
     const bpTable = document.getElementById("bpTable");
     const clustersDiv = document.getElementById("clusters");
     const previewTable = document.getElementById("preview");
@@ -661,51 +984,46 @@
     const mcMoveTable = document.getElementById("mcMoveTable");
     const mcInclTable = document.getElementById("mcInclTable");
 
-    const loadDemoBtn = document.getElementById("loadDemo");
-    const downloadExampleBtn = document.getElementById("downloadExample");
-
     // Modal
     const mathBackdrop = document.getElementById("mathBackdrop");
     const openMath = document.getElementById("openMath");
+    const openMathHero = document.getElementById("openMathHero");
     const openMath2 = document.getElementById("openMath2");
     const closeMath = document.getElementById("closeMath");
 
-    let rawGrid = null;
-    let headers = null;
-    let dataRows = null;
-    let state = null;
+    const loadDemoBtn = document.getElementById("loadDemo");
+    const downloadExampleBtn = document.getElementById("downloadExample");
 
-    function openMathModal(e) {
-      if (e) e.preventDefault();
-      mathBackdrop.style.display = "flex";
-    }
-    function closeMathModal(e) {
-      if (e) e.preventDefault();
-      mathBackdrop.style.display = "none";
-    }
+    let rawGrid=null, headers=null, dataRows=null, state=null;
+
+    function openMathModal(e){ if (e) e.preventDefault(); mathBackdrop.style.display = "flex"; }
+    function closeMathModal(e){ if (e) e.preventDefault(); mathBackdrop.style.display = "none"; }
+
     openMath.addEventListener("click", openMathModal);
+    openMathHero.addEventListener("click", openMathModal);
     openMath2.addEventListener("click", openMathModal);
     closeMath.addEventListener("click", closeMathModal);
-    mathBackdrop.addEventListener("click", (e) => {
-      if (e.target === mathBackdrop) closeMathModal(e);
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") mathBackdrop.style.display = "none";
+    mathBackdrop.addEventListener("click", (e)=>{ if (e.target === mathBackdrop) closeMathModal(e); });
+    document.addEventListener("keydown", (e)=>{ if (e.key === "Escape") mathBackdrop.style.display = "none"; });
+
+    jumpUpload.addEventListener("click", ()=>{
+      document.getElementById("uploadCard").scrollIntoView({ behavior:"smooth", block:"start" });
+      setTimeout(()=>fileInput.click(), 250);
     });
 
-    function fillSelect(selectEl, headers) {
+    function fillSelect(selectEl, headers){
       selectEl.innerHTML = "";
-      headers.forEach((h, idx) => {
+      headers.forEach((h, idx)=>{
         const opt = document.createElement("option");
         opt.value = String(idx);
-        opt.textContent = h || `(col ${idx + 1})`;
+        opt.textContent = h || `(col ${idx+1})`;
         selectEl.appendChild(opt);
       });
     }
 
-    function computeFromMapping(itemIdx, scoreIdx) {
+    function computeFromMapping(itemIdx, scoreIdx){
       const rows = [];
-      for (const r of dataRows) {
+      for (const r of dataRows){
         const item = (r[itemIdx] ?? "").toString().trim();
         const score = safeNumber(r[scoreIdx]);
         if (!item) continue;
@@ -715,176 +1033,178 @@
       if (rows.length < 2) throw new Error("Need at least two valid rows with non-empty item and numeric score.");
 
       const sorted = sortDesc(rows);
-
-      const scores = sorted.map(r => r.score);
+      const scores = sorted.map(r=>r.score);
       const min = Math.min(...scores);
       const max = Math.max(...scores);
-      const range = (max - min) || 1;
-
+      const range = (max-min) || 1;
       const bps = computeBreakpoints(sorted);
-
       return { rows, sorted, scores, min, max, range, bps };
     }
 
-    function enableMcUI(enabled) {
+    function selectionSize(){
+      if (!state) return 1;
+      const v = pickN.value;
+      const n = state.sorted.length;
+
+      if (v === "custom"){
+        customPickWrap.style.display = "block";
+        const k = clamp(Math.floor(Number(kInput.value) || 1), 1, n-1);
+        kInput.value = String(k);
+        return k;
+      }
+      customPickWrap.style.display = "none";
+      return clamp(Number(v), 1, n-1);
+    }
+
+    function enableMcUI(enabled){
       mcN.disabled = !enabled;
       mcSeed.disabled = !enabled;
       runMcBtn.disabled = !enabled;
       if (!enabled) mcOut.style.display = "none";
     }
 
-    function selectionSize() {
-      if (!state) return 1;
+    function bandSuggestion(sorted, eps, k){
+      const n = sorted.length;
+      const cutIdx = k-1;
+      if (cutIdx < 0 || cutIdx >= n-1) return null;
 
-      let v = pickN.value;
-      if (v === "custom") {
-        customPickWrap.style.display = "inline-block";
-        const n = state.sorted.length;
-        const k = clamp(Math.floor(Number(kInput.value) || 1), 1, n - 1);
-        kInput.value = String(k);
-        return k;
-      } else {
-        customPickWrap.style.display = "none";
-        const k = Number(v);
-        const n = state.sorted.length;
-        return clamp(k, 1, n - 1);
+      const gapAtCut = sorted[cutIdx].score - sorted[cutIdx+1].score;
+      if (gapAtCut > 2*eps) return null;
+
+      let lo = cutIdx;
+      let hi = cutIdx+1;
+
+      while (lo > 0){
+        const g = sorted[lo-1].score - sorted[lo].score;
+        if (g <= 2*eps) lo--;
+        else break;
       }
+      while (hi < n-1){
+        const g = sorted[hi].score - sorted[hi+1].score;
+        if (g <= 2*eps) hi++;
+        else break;
+      }
+      return { loRank: lo+1, hiRank: hi+1 };
     }
 
-    function updateEpsControls() {
-      const maxEps = Math.max(state.range / 2, state.range * 0.05, 1e-6);
-      epsSlider.min = "0";
-      epsSlider.max = String(maxEps);
-      epsSlider.step = String(maxEps / 500);
-
-      const current = Number(epsSlider.value) || 0;
-      epsSlider.value = String(clamp(current, 0, maxEps));
-
-      const eps = Number(epsSlider.value) || 0;
-      const pct = (eps / state.range) * 100;
+    function setEpsFromPct(pct){
+      if (!state) return;
+      const eps = (pct/100) * state.range;
+      epsSlider.value = String(clamp(eps, 0, Number(epsSlider.max)));
       epsPctInput.value = String(pct.toFixed(2));
-
       updateOutputs();
     }
 
-    function bandSuggestion(sorted, eps, k) {
-      const n = sorted.length;
-      const cutIdx = k - 1;
-      if (cutIdx < 0 || cutIdx >= n - 1) return null;
+    function updateEpsControls(){
+      const maxEps = Math.max(state.range/2, state.range*0.05, 1e-6);
+      epsSlider.min = "0";
+      epsSlider.max = String(maxEps);
+      epsSlider.step = String(maxEps/500);
 
-      const gapAtCut = sorted[cutIdx].score - sorted[cutIdx + 1].score;
-      if (gapAtCut > 2 * eps) return null;
-
-      let lo = cutIdx;
-      let hi = cutIdx + 1;
-
-      while (lo > 0) {
-        const g = sorted[lo - 1].score - sorted[lo].score;
-        if (g <= 2 * eps) lo--;
-        else break;
-      }
-      while (hi < n - 1) {
-        const g = sorted[hi].score - sorted[hi + 1].score;
-        if (g <= 2 * eps) hi++;
-        else break;
-      }
-      return { loRank: lo + 1, hiRank: hi + 1 };
+      // Apply default preset
+      const pct = Number(epsPctInput.value) || 0.5;
+      setEpsFromPct(pct);
     }
 
-    function updateOutputs() {
+    function updateOutputs(){
       if (!state) return;
 
       const eps = Number(epsSlider.value) || 0;
-      const epsPctVal = (eps / state.range) * 100;
+      const pct = (eps/state.range)*100;
       epsLabel.textContent = fmt(eps);
-      epsPct.textContent = epsPctVal.toFixed(2) + "%";
+      epsPct.textContent = pct.toFixed(2) + "%";
 
       const k = selectionSize();
-      kInput.max = String(Math.max(1, state.sorted.length - 1));
+      const n = state.sorted.length;
 
-      const epsSel = (state.sorted[k - 1].score - state.sorted[k].score) / 2;
-      const epsAny = state.bps.epsAnyFlip;
+      const epsSel = (state.sorted[k-1].score - state.sorted[k].score) / 2;
+      const needSelPct = (epsSel/state.range)*100;
 
-      const needSelPct = (epsSel / state.range) * 100;
-      const needAnyPct = (epsAny / state.range) * 100;
+      const stable = epsSel > eps;
 
-      const defensible = epsSel > eps;
-
-      const band = bandSuggestion(state.sorted, eps, k);
-      const labelPick = `Select ${k}`;
-
-      if (defensible) {
-        headline.innerHTML = `<span class="pill ok">Verdict: defensible</span> <strong>${labelPick}</strong> is reasonable under the current assumptions.`;
-        sub.textContent = `Why: your selection stays the same unless score accuracy is worse than about ±${needSelPct.toFixed(2)}% of the score range.`;
+      // Verdict presentation
+      verdictPill.style.display = "inline-flex";
+      if (stable){
+        verdictPill.innerHTML = `<span class="dot ok"></span><span>Defensible cutoff</span>`;
+        verdictLine.innerHTML = `Selecting <strong>${k}</strong> is defensible under the current assumptions.`;
+        actionLine.innerHTML = `Proceed with a strict selection of <strong>${k}</strong>.`;
+        whyLine.textContent = `To keep this selection stable, scoring must be accurate within about ±${needSelPct.toFixed(2)}% of the score range (±${fmt(epsSel)}).`;
       } else {
-        headline.innerHTML = `<span class="pill warn">Verdict: not defensible</span> A strict <strong>${labelPick}</strong> cutoff is likely fake precision.`;
-        if (band) {
-          sub.textContent = `Action: treat ranks ${band.loRank} to ${band.hiRank} as a tie band, or gather better data before making a hard cutoff.`;
+        verdictPill.innerHTML = `<span class="dot warn"></span><span>Likely fake precision</span>`;
+        verdictLine.innerHTML = `A strict selection of <strong>${k}</strong> is not defensible.`;
+
+        const band = bandSuggestion(state.sorted, eps, k);
+        if (band){
+          actionLine.innerHTML = `Treat ranks <strong>${band.loRank} to ${band.hiRank}</strong> as a tie band.`;
+          whyLine.textContent = `At the current wiggle room, items near the boundary can swap in and out of the selected set.`;
         } else {
-          sub.textContent = `Action: avoid a hard cutoff unless you can defend the required accuracy. Consider banding items near the boundary.`;
+          actionLine.innerHTML = `Avoid a hard cutoff unless you can defend higher score accuracy.`;
+          whyLine.textContent = `At the current wiggle room, the selection boundary can flip.`;
         }
       }
 
+      // Threshold table
+      const epsAny = state.bps.epsAnyFlip;
+      const needAnyPct = (epsAny/state.range)*100;
+
       renderTable(bpTable, ["Threshold", "Meaning", "Required accuracy"], [
-        ["Selection threshold", `Keep the selected set (${labelPick}) unchanged`, `±${needSelPct.toFixed(2)}% (±${fmt(epsSel)})`],
+        ["Selection threshold", `Keep the selected set (select ${k}) unchanged`, `±${needSelPct.toFixed(2)}% (±${fmt(epsSel)})`],
         ["Any-swap threshold", "Prevent any adjacent swap anywhere", `±${needAnyPct.toFixed(2)}% (±${fmt(epsAny)})`]
       ]);
 
+      // Tie bands
       const cl = clustersAtEps(state.sorted, eps);
-      clustersDiv.innerHTML = cl.map((c, idx) => {
-        const ranks = c.map(x => state.sorted.indexOf(x) + 1);
+      clustersDiv.innerHTML = cl.map((c, idx)=>{
+        const ranks = c.map(x=>state.sorted.indexOf(x)+1);
         const from = Math.min(...ranks);
         const to = Math.max(...ranks);
-        const items = c.map(x => x.item).join(", ");
-        return `<p><strong>Band ${idx + 1} (ranks ${from} to ${to})</strong><br>${items}</p>`;
+        const items = c.map(x=>x.item).join(", ");
+        return `<div class="callout" style="margin-bottom:10px;">
+                  <strong>Band ${idx+1} (ranks ${from} to ${to})</strong><br>
+                  <span class="muted">${items}</span>
+                </div>`;
       }).join("");
 
+      // Preview
       const nPrev = clamp(Math.floor(Number(previewN.value) || 25), 5, 200);
-      renderTable(
-        previewTable,
-        ["Rank", "Item", "Score"],
-        state.sorted.slice(0, nPrev).map((r, i) => [String(i + 1), r.item, String(r.score)])
+      renderTable(previewTable, ["Rank","Item","Score"],
+        state.sorted.slice(0,nPrev).map((r,i)=>[String(i+1), r.item, String(r.score)])
       );
 
-      drawPlot(scorePlot, state.scores, { yLabel: "score", xLabel: "rank" });
-      drawPlot(gapPlot, state.bps.gaps, { yLabel: "gap", xLabel: "adjacent pair", threshold: 2 * eps, thresholdLabel: "2 × wiggle" });
+      // Plots
+      drawPlot(scorePlot, state.scores, { yLabel:"score" });
+      drawPlot(gapPlot, state.bps.gaps, { yLabel:"gap", threshold: 2*eps });
 
       mcOut.style.display = "none";
     }
 
-    function exportJSON() {
+    function exportJSON(){
       const eps = Number(epsSlider.value) || 0;
       const k = selectionSize();
-
-      const epsSel = (state.sorted[k - 1].score - state.sorted[k].score) / 2;
-      const epsAny = state.bps.epsAnyFlip;
+      const epsSel = (state.sorted[k-1].score - state.sorted[k].score)/2;
 
       const result = {
         meta: {
           generated_at: new Date().toISOString(),
-          note: "Decision hygiene tool. Thresholds derived from score spacing. This does not estimate true uncertainty.",
+          note: "Decision hygiene tool. Thresholds derived from score spacing. This does not estimate true uncertainty."
         },
         input: {
           n_items: state.sorted.length,
           selection_size: k,
-          wiggle_room: eps,
-          wiggle_room_pct_of_range: (eps / state.range) * 100,
+          wiggle_room_abs: eps,
+          wiggle_room_pct_of_range: (eps/state.range)*100
         },
         thresholds: {
           selection_flip_requires_accuracy_within: {
             abs: epsSel,
-            pct_of_range: (epsSel / state.range) * 100
-          },
-          any_swap_requires_accuracy_within: {
-            abs: epsAny,
-            pct_of_range: (epsAny / state.range) * 100
+            pct_of_range: (epsSel/state.range)*100
           }
         },
-        tie_bands_at_wiggle_room: clustersAtEps(state.sorted, eps).map(cluster => cluster.map(x => x.item)),
-        top_items_preview: state.sorted.slice(0, 25),
+        tie_bands: clustersAtEps(state.sorted, eps).map(cluster => cluster.map(x=>x.item)),
+        preview: state.sorted.slice(0,25)
       };
 
-      const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(result,null,2)], { type:"application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -895,8 +1215,92 @@
       URL.revokeObjectURL(url);
     }
 
-    // Demo + example buttons
-    downloadExampleBtn.addEventListener("click", () => {
+    // Preset behavior
+    preset.addEventListener("change", ()=>{
+      if (!state){
+        // still show custom input toggle even before data, so user sees it
+        if (preset.value === "custom") customEpsWrap.style.display = "block";
+        else customEpsWrap.style.display = "none";
+        return;
+      }
+
+      if (preset.value === "custom"){
+        customEpsWrap.style.display = "block";
+        setEpsFromPct(Number(epsPctInput.value) || 0.5);
+      } else {
+        customEpsWrap.style.display = "none";
+        setEpsFromPct(Number(preset.value));
+      }
+    });
+
+    epsPctInput.addEventListener("input", ()=>{
+      if (!state) return;
+      setEpsFromPct(Number(epsPctInput.value) || 0);
+    });
+
+    epsSlider.addEventListener("input", ()=>{
+      if (!state) return;
+      const eps = Number(epsSlider.value) || 0;
+      const pct = (eps/state.range)*100;
+      epsPctInput.value = pct.toFixed(2);
+      preset.value = "custom";
+      customEpsWrap.style.display = "block";
+      updateOutputs();
+    });
+
+    // Stress test UI
+    mcEnable.addEventListener("change", ()=>enableMcUI(mcEnable.checked));
+
+    runMcBtn.addEventListener("click", ()=>{
+      if (!state) return;
+      const eps = Number(epsSlider.value) || 0;
+      const nSamp = clamp(Math.floor(Number(mcN.value) || 2000), 200, 20000);
+      const seed = clamp(Math.floor(Number(mcSeed.value) || 12345), 0, 999999999);
+      const k = selectionSize();
+
+      const mc = runMonteCarlo(state.sorted, eps, nSamp, seed, k);
+
+      const setSamePct = (mc.selection.setSameProb*100).toFixed(1);
+      const overlapPct = (mc.selection.avgOverlapFrac*100).toFixed(1);
+
+      mcSummary.textContent = `Selected set unchanged: ${setSamePct}%. Average overlap: ${overlapPct}%.`;
+
+      renderTable(mcTopKTable, ["Metric","Value"], [
+        ["Selected set unchanged", `${setSamePct}%`],
+        ["Average overlap", `${overlapPct}%`]
+      ]);
+
+      renderTable(mcMoveTable, ["Orig rank","Item","Same-rank %","Avg |move|","Observed rank range"],
+        mc.rows.slice(0,30).map(r=>[
+          String(r.origRank),
+          r.item,
+          (r.stability*100).toFixed(1) + "%",
+          fmt(r.avgAbsMove),
+          `${r.minRank} to ${r.maxRank}`
+        ])
+      );
+
+      renderTable(mcInclTable, ["Orig rank","Item","P(in selection)"],
+        mc.rows.slice(0,30).map(r=>{
+          const p = mc.selection.inclusionProb.find(x=>x.item===r.item)?.prob ?? 0;
+          return [String(r.origRank), r.item, (p*100).toFixed(1) + "%"];
+        })
+      );
+
+      mcOut.style.display = "block";
+    });
+
+    // Export
+    exportJsonBtn.addEventListener("click", ()=>{ if (state) exportJSON(); });
+
+    // Main controls
+    pickN.addEventListener("change", ()=>updateOutputs());
+    kInput.addEventListener("input", ()=>updateOutputs());
+    previewN.addEventListener("input", ()=>updateOutputs());
+
+    // Demo and example
+    downloadExampleBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
       const csv = [
         "item,score",
         "Alpha,92.1",
@@ -909,7 +1313,7 @@
         "Theta,90.6"
       ].join("\n");
 
-      const blob = new Blob([csv], { type: "text/csv" });
+      const blob = new Blob([csv], { type:"text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -920,7 +1324,8 @@
       URL.revokeObjectURL(url);
     });
 
-    loadDemoBtn.addEventListener("click", () => {
+    loadDemoBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
       const csv = [
         "item,score",
         "Alpha,92.1",
@@ -939,21 +1344,20 @@
 
       fillSelect(itemColSel, headers);
       fillSelect(scoreColSel, headers);
-
       itemColSel.value = "0";
       scoreColSel.value = "1";
 
       mapRow.style.display = "flex";
       parseStatus.textContent = `Loaded demo data (${dataRows.length} rows). Click Run.`;
-      parseStatus.className = "muted";
+      applyMapBtn.focus();
     });
 
-    // File load and mapping
-    fileInput.addEventListener("change", async () => {
+    // File upload parse
+    fileInput.addEventListener("change", async ()=>{
       const file = fileInput.files?.[0];
       if (!file) return;
 
-      try {
+      try{
         const text = await file.text();
         rawGrid = parseCSVRobust(text);
         headers = rawGrid[0];
@@ -962,18 +1366,14 @@
         fillSelect(itemColSel, headers);
         fillSelect(scoreColSel, headers);
 
-        const itemGuess = guessColumn(headers, ["item", "name", "label", "id", "candidate", "vendor"]);
-        const scoreGuess = guessColumn(headers, ["score", "value", "rating", "points", "rank_score", "total"]);
-
+        const itemGuess = guessColumn(headers, ["item","name","label","id","candidate","vendor"]);
+        const scoreGuess = guessColumn(headers, ["score","value","rating","points","rank_score","total"]);
         if (itemGuess !== -1) itemColSel.value = String(itemGuess);
         if (scoreGuess !== -1) scoreColSel.value = String(scoreGuess);
 
         mapRow.style.display = "flex";
         parseStatus.textContent = `Loaded ${dataRows.length} rows. Confirm columns and click Run.`;
-        parseStatus.className = "muted";
-
-        if (itemGuess !== -1 && scoreGuess !== -1) applyMapBtn.click();
-      } catch (err) {
+      } catch(err){
         alert(err?.message || String(err));
         mapRow.style.display = "none";
         controls.style.display = "none";
@@ -982,8 +1382,8 @@
       }
     });
 
-    applyMapBtn.addEventListener("click", () => {
-      try {
+    applyMapBtn.addEventListener("click", ()=>{
+      try{
         const itemIdx = Number(itemColSel.value);
         const scoreIdx = Number(scoreColSel.value);
 
@@ -992,92 +1392,38 @@
         controls.style.display = "block";
         out.style.display = "block";
 
-        // Default selection size mapping
+        // Default selection size: 5 or n-1
         const n = state.sorted.length;
-        const defaultPick = Math.min(5, Math.max(1, n - 1));
-        kInput.value = String(defaultPick);
+        const def = Math.min(5, Math.max(1, n-1));
+        pickN.value = (def===1 || def===3 || def===5 || def===10) ? String(def) : "custom";
+        kInput.value = String(def);
+
+        // Default wiggle room preset is 0.50%
+        preset.value = "0.50";
+        customEpsWrap.style.display = "none";
+        epsPctInput.value = "0.50";
 
         updateEpsControls();
         enableMcUI(mcEnable.checked);
 
         parseStatus.textContent = `Parsed ${state.sorted.length} valid rows.`;
-        parseStatus.className = "muted";
 
         updateOutputs();
-      } catch (err) {
+        controls.scrollIntoView({ behavior:"smooth", block:"start" });
+      } catch(err){
         parseStatus.textContent = err?.message || String(err);
-        parseStatus.className = "muted err";
+        state = null;
         controls.style.display = "none";
         out.style.display = "none";
-        state = null;
       }
     });
 
-    // Main controls
-    pickN.addEventListener("change", () => updateOutputs());
-    kInput.addEventListener("input", () => updateOutputs());
-
-    epsSlider.addEventListener("input", () => updateOutputs());
-
-    epsPctInput.addEventListener("input", () => {
-      if (!state) return;
-      const pct = Number(epsPctInput.value);
-      const eps = (pct / 100) * state.range;
-      epsSlider.value = String(clamp(eps, 0, Number(epsSlider.max)));
-      updateOutputs();
-    });
-
-    exportJsonBtn.addEventListener("click", () => {
-      if (!state) return;
-      exportJSON();
-    });
-
-    // Stress test UI
-    mcEnable.addEventListener("change", () => enableMcUI(mcEnable.checked));
-
-    runMcBtn.addEventListener("click", () => {
-      if (!state) return;
-      const eps = Number(epsSlider.value) || 0;
-      const nSamp = clamp(Math.floor(Number(mcN.value) || 2000), 200, 20000);
-      const seed = clamp(Math.floor(Number(mcSeed.value) || 12345), 0, 999999999);
-      const k = selectionSize();
-
-      const mc = runMonteCarlo(state.sorted, eps, nSamp, seed, k);
-
-      const setSamePct = (mc.selection.setSameProb * 100).toFixed(1);
-      const overlapPct = (mc.selection.avgOverlapFrac * 100).toFixed(1);
-
-      const invPart = (mc.inversionRate == null)
-        ? "Inversion rate skipped (list too large)."
-        : `Average pair inversion rate: ${(mc.inversionRate * 100).toFixed(2)}%.`;
-
-      mcSummary.textContent =
-        `With the current wiggle room, the selected set stays identical only ${setSamePct}% of the time. ` +
-        `On average, ${overlapPct}% of selected items stay the same. ` +
-        invPart;
-
-      renderTable(mcTopKTable, ["Metric", "Value"], [
-        ["Selected set unchanged", `${setSamePct}%`],
-        ["Average overlap", `${overlapPct}%`],
-      ]);
-
-      const moveRows = mc.rows.slice(0, 30).map(r => [
-        String(r.origRank),
-        r.item,
-        (r.stability * 100).toFixed(1) + "%",
-        fmt(r.avgAbsMove),
-        `${r.minRank} to ${r.maxRank}`
-      ]);
-      renderTable(mcMoveTable, ["Orig rank", "Item", "Same-rank %", "Avg |move|", "Observed rank range"], moveRows);
-
-      const inclByOrigRank = mc.rows.slice(0, 30).map(r => {
-        const p = mc.selection.inclusionProb.find(x => x.item === r.item)?.prob ?? 0;
-        return [String(r.origRank), r.item, (p * 100).toFixed(1) + "%"];
-      });
-      renderTable(mcInclTable, ["Orig rank", "Item", "P(in selection)"], inclByOrigRank);
-
-      mcOut.style.display = "block";
-    });
+    // Modal open hooks
+    document.getElementById("openMath").addEventListener("click", openMathModal);
+    document.getElementById("openMathHero").addEventListener("click", openMathModal);
+    document.getElementById("openMath2").addEventListener("click", openMathModal);
+    document.getElementById("closeMath").addEventListener("click", closeMathModal);
+    mathBackdrop.addEventListener("click", (e)=>{ if (e.target === mathBackdrop) closeMathModal(e); });
   </script>
 </body>
 </html>
