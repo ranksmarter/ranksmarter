@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>RankSmarter | Defensible rankings</title>
+  <meta name="description" content="Mathematical reality check for ranked selections. Stop pretending your ranking is real when small scoring errors can change who gets selected.">
   <style>
     :root{
       --bg:#ffffff;
@@ -14,13 +15,40 @@
       --soft2:#fbfbfc;
       --shadow: 0 14px 40px rgba(0,0,0,0.08);
       --radius: 16px;
+      --accent: #2563eb;
+      --accent-light: #dbeafe;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #ea580c;
+      --warning-light: #fed7aa;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
     }
+    
+    [data-theme="dark"] {
+      --bg: #0a0a0a;
+      --text: #ededed;
+      --muted: #a3a3a3;
+      --border: #262626;
+      --soft: #171717;
+      --soft2: #1a1a1a;
+      --accent: #3b82f6;
+      --accent-light: #1e3a8a;
+      --success: #22c55e;
+      --success-light: #14532d;
+      --warning: #f97316;
+      --warning-light: #7c2d12;
+      --danger: #ef4444;
+      --danger-light: #7f1d1d;
+    }
+    
     *{ box-sizing:border-box; }
     body{
       margin: 0;
       background: var(--bg);
       color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      transition: background 0.2s, color 0.2s;
     }
     .wrap{
       max-width: 1100px;
@@ -35,6 +63,7 @@
       justify-content: space-between;
       gap: 14px;
       margin-bottom: 18px;
+      flex-wrap: wrap;
     }
     .brand{
       display:flex;
@@ -67,11 +96,22 @@
       font-size: 14px;
     }
     .link:hover{ text-decoration: underline; }
+    
+    /* Theme toggle */
+    .theme-toggle{
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--soft);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .theme-toggle:hover{ background: var(--soft2); }
 
     /* Hero */
     .hero{
       border: 1px solid var(--border);
-      background: linear-gradient(180deg, var(--soft2), #fff);
+      background: linear-gradient(180deg, var(--soft2), var(--bg));
       border-radius: var(--radius);
       padding: 26px;
       box-shadow: var(--shadow);
@@ -107,7 +147,7 @@
 
     .heroRight{
       border: 1px solid var(--border);
-      background: #fff;
+      background: var(--bg);
       border-radius: var(--radius);
       padding: 16px;
     }
@@ -132,7 +172,7 @@
       height: 26px;
       border-radius: 8px;
       border: 1px solid var(--border);
-      background: #fff;
+      background: var(--bg);
       display:flex;
       align-items:center;
       justify-content:center;
@@ -164,7 +204,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 18px;
-      background: #fff;
+      background: var(--bg);
     }
     .card.soft{
       background: var(--soft2);
@@ -189,7 +229,8 @@
       border-radius: 12px;
       border: 1px solid var(--border);
       font-size: 14px;
-      background: #fff;
+      background: var(--bg);
+      color: var(--text);
       min-width: 160px;
     }
     input[type="file"]{
@@ -199,17 +240,22 @@
       padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid var(--border);
-      background: #fff;
+      background: var(--bg);
+      color: var(--text);
       cursor: pointer;
       font-size: 14px;
+      transition: all 0.15s;
     }
     button:hover{ background: var(--soft); }
     button.primary{
-      background: #111;
+      background: var(--accent);
       color: #fff;
-      border-color: #111;
+      border-color: var(--accent);
     }
-    button.primary:hover{ background: #000; }
+    button.primary:hover{ 
+      background: var(--accent);
+      filter: brightness(1.1);
+    }
     button:disabled{
       opacity: 0.5;
       cursor: not-allowed;
@@ -228,7 +274,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 16px;
-      background: #fff;
+      background: var(--bg);
     }
     .panel h3{
       margin: 0;
@@ -261,16 +307,24 @@
       color: var(--muted);
       margin-top: 10px;
     }
-    .dot{ width: 9px; height: 9px; border-radius: 999px; background: #999; display:inline-block; }
-    .dot.ok{ background: #1b7f3b; }
-    .dot.warn{ background: #b36b00; }
+    .dot{ 
+      width: 9px; 
+      height: 9px; 
+      border-radius: 999px; 
+      background: var(--muted); 
+      display:inline-block; 
+    }
+    .dot.ok{ background: var(--success); }
+    .dot.warn{ background: var(--warning); }
 
     /* Advanced */
     details summary{
       cursor: pointer;
       color: var(--muted);
       font-size: 14px;
+      padding: 8px 0;
     }
+    details summary:hover{ color: var(--text); }
     .advBox{
       margin-top: 12px;
       border: 1px solid var(--border);
@@ -278,28 +332,48 @@
       border-radius: var(--radius);
       padding: 14px;
     }
-    input[type="range"]{ width: 340px; }
+    input[type="range"]{ width: 340px; max-width: 100%; }
 
     /* Tables + plots */
     table{ border-collapse: collapse; width: 100%; }
-    th, td{ border-bottom: 1px solid #efefef; padding: 8px; text-align: left; vertical-align: top; font-size: 14px; }
+    th, td{ 
+      border-bottom: 1px solid var(--border); 
+      padding: 8px; 
+      text-align: left; 
+      vertical-align: top; 
+      font-size: 14px; 
+    }
     th{ color: var(--muted); font-weight: 600; }
-    canvas{ width: 100%; height: 220px; border: 1px solid var(--border); border-radius: var(--radius); background:#fff; }
-    code{ background: #f2f2f3; padding: 2px 6px; border-radius: 8px; }
+    canvas{ 
+      width: 100%; 
+      height: 220px; 
+      border: 1px solid var(--border); 
+      border-radius: var(--radius); 
+      background: var(--bg); 
+    }
+    code{ 
+      background: var(--soft); 
+      padding: 2px 6px; 
+      border-radius: 8px;
+      font-size: 13px;
+    }
 
     /* Modal */
     .backdrop{
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45);
+      position: fixed; 
+      inset: 0;
+      background: rgba(0,0,0,0.5);
       display: none;
       align-items: center;
       justify-content: center;
       padding: 18px;
       z-index: 999;
+      backdrop-filter: blur(4px);
     }
     .modal{
-      max-width: 900px; width: 100%;
-      background: #fff;
+      max-width: 900px; 
+      width: 100%;
+      background: var(--bg);
       border-radius: 18px;
       border: 1px solid var(--border);
       box-shadow: 0 18px 70px rgba(0,0,0,0.28);
@@ -308,7 +382,7 @@
     }
     .modalHeader{
       padding: 14px 16px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--border);
       display:flex;
       justify-content: space-between;
       align-items:center;
@@ -317,11 +391,13 @@
     .modalTitle{ margin: 0; font-size: 16px; font-weight: 700; }
     .modalBody{ padding: 16px; color: var(--text); }
     .modalBody p{ color: var(--muted); line-height: 1.55; }
+    .modalBody h3{ margin-top: 20px; }
+    .modalBody ul{ margin: 8px 0; padding-left: 20px; }
     .closeBtn{
       padding: 8px 10px;
       border-radius: 12px;
       border: 1px solid var(--border);
-      background: #fff;
+      background: var(--bg);
       cursor: pointer;
     }
     .callout{
@@ -330,10 +406,101 @@
       border-radius: 14px;
       padding: 12px 12px;
       color: var(--muted);
+      margin: 12px 0;
+    }
+    .callout.info{
+      background: var(--accent-light);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .callout.warning{
+      background: var(--warning-light);
+      border-color: var(--warning);
+      color: var(--text);
+    }
+    .callout.success{
+      background: var(--success-light);
+      border-color: var(--success);
+      color: var(--text);
     }
     .muted{ color: var(--muted); }
-
-    .hr{ border:none; border-top: 1px solid #eee; margin: 14px 0; }
+    .hr{ border:none; border-top: 1px solid var(--border); margin: 14px 0; }
+    
+    /* Wiggle room helper */
+    .domain-examples{
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .domain-card{
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--soft);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .domain-card:hover{
+      background: var(--soft2);
+      border-color: var(--accent);
+    }
+    .domain-card h4{
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .domain-card p{
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .domain-card .recommended{
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 12px;
+      padding: 2px 8px;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    
+    /* Action recommendations */
+    .action-steps{
+      margin-top: 12px;
+      padding-left: 20px;
+    }
+    .action-steps li{
+      margin: 8px 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    
+    /* Loading state */
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spinner{
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    
+    /* Keyboard shortcuts hint */
+    .kbd{
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-family: ui-monospace, monospace;
+      background: var(--soft);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-left: 6px;
+    }
   </style>
 </head>
 <body>
@@ -341,10 +508,14 @@
     <div class="topbar">
       <div class="brand">
         <h1>RankSmarter</h1>
-        <span class="tag">Local only, your data never leaves the browser</span>
+        <span class="tag">🔒 Local only, your data never leaves the browser</span>
       </div>
       <div class="links">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+          <span id="themeIcon">🌙</span>
+        </button>
         <a class="link" href="#" id="openMath">Explain the maths</a>
+        <a class="link" href="#" id="openGuide">Quick guide</a>
         <a class="link" href="#" id="downloadExample">Example CSV</a>
         <a class="link" href="#" id="loadDemo">Try demo</a>
       </div>
@@ -356,14 +527,14 @@
           <h2>Stop pretending your ranking is real.</h2>
           <p>
             Rankings often look precise, but small scoring errors can change who gets selected.
-            This tool is a mathematical “reality check” that tells you whether a cutoff is defensible,
+            This tool is a mathematical "reality check" that tells you whether a cutoff is defensible,
             and if not, exactly where you should treat the boundary as a tie band.
           </p>
           <div class="usecases">
-            <strong>Use it for:</strong> hiring scorecards, vendor selection, prioritisation, investment shortlists.
+            <strong>Use it for:</strong> hiring scorecards, vendor selection, prioritisation, investment shortlists, grant awards.
           </div>
           <div class="heroActions">
-            <button class="primary" id="jumpUpload">Upload scores</button>
+            <button class="primary" id="jumpUpload">Upload scores <span class="kbd">Ctrl+U</span></button>
             <button id="openMathHero">Explain the maths</button>
           </div>
         </div>
@@ -422,199 +593,6 @@
             </div>
             <div>
               <div class="labelTop">Rows to preview</div>
-              <input id="previewN" type="number" min="5" max="200" step="5" value="25">
-            </div>
-            <div style="margin-top: 22px;">
-              <button class="primary" id="applyMap">Run</button>
-            </div>
-            <div style="margin-top: 22px;">
-              <span id="parseStatus" class="muted"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="controls" class="card soft" style="display:none;">
-      <div class="row">
-        <div>
-          <div class="labelTop">How many are you selecting?</div>
-          <select id="pickN">
-            <option value="1">Select 1</option>
-            <option value="3">Select 3</option>
-            <option value="5" selected>Select 5</option>
-            <option value="10">Select 10</option>
-            <option value="custom">Custom…</option>
-          </select>
-        </div>
-
-        <div id="customPickWrap" style="display:none;">
-          <div class="labelTop">Custom selection size</div>
-          <input id="k" type="number" min="1" step="1" value="5">
-        </div>
-
-        <div class="grow"></div>
-
-        <button id="exportJson">Export result (JSON)</button>
-      </div>
-
-      <details style="margin-top: 12px;">
-        <summary>Advanced</summary>
-        <div class="advBox">
-          <div class="muted" style="margin-bottom: 10px;">
-            “Wiggle room” is the maximum score error you are willing to admit. If you do not know, start with a modest default.
-          </div>
-
-          <div class="row">
-            <div>
-              <div class="labelTop">Wiggle room preset</div>
-              <select id="preset">
-                <option value="0.25">Scores are very consistent (±0.25% of range)</option>
-                <option value="0.50" selected>Scores are somewhat subjective (±0.50% of range)</option>
-                <option value="1.00">Scores are noisy (±1.00% of range)</option>
-                <option value="custom">Custom…</option>
-              </select>
-            </div>
-
-            <div id="customEpsWrap" style="display:none;">
-              <div class="labelTop">Custom wiggle room (% of range)</div>
-              <input id="epsPctInput" type="number" min="0" max="200" step="0.1" value="0.50">
-            </div>
-          </div>
-
-          <div class="row" style="margin-top: 10px;">
-            <div>
-              <div class="labelTop">Wiggle room slider (absolute)</div>
-              <input id="eps" type="range" min="0" max="1" step="0.001" value="0">
-            </div>
-            <div>
-              <div class="muted">Current wiggle room</div>
-              <div style="margin-top: 4px;">
-                <strong id="epsLabel">0.000</strong>
-                <span class="muted"> (</span><span id="epsPct">0.00%</span><span class="muted"> of score range)</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="row">
-            <label style="display:flex; gap: 10px; align-items:center;">
-              <input id="mcEnable" type="checkbox">
-              <span>Run stress test (optional)</span>
-            </label>
-            <div>
-              <div class="labelTop">Samples</div>
-              <input id="mcN" type="number" min="200" max="20000" step="200" value="2000" disabled>
-            </div>
-            <div>
-              <div class="labelTop">Seed</div>
-              <input id="mcSeed" type="number" min="0" max="999999999" step="1" value="12345" disabled>
-            </div>
-            <div style="margin-top: 22px;">
-              <button id="runMc" disabled>Run stress test</button>
-            </div>
-          </div>
-        </div>
-      </details>
-    </div>
-
-    <div id="out" class="card" style="display:none;">
-      <div class="verdict">
-        <div class="panel">
-          <h3>Verdict</h3>
-          <div class="bigLine" id="verdictLine"></div>
-          <div class="pill" id="verdictPill" style="display:none;"></div>
-        </div>
-
-        <div class="panel">
-          <h3>What to do</h3>
-          <div class="bigLine" id="actionLine"></div>
-          <div class="smallLine" id="whyLine"></div>
-        </div>
-      </div>
-
-      <div class="row" style="margin-top: 14px; justify-content: space-between;">
-        <div class="muted" style="font-size: 14px;">
-          This does not claim “true uncertainty”. It answers: “If scoring could be off by this much, would the decision change?”
-        </div>
-        <div>
-          <a href="#" id="openMath2" class="link">Explain the maths</a>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top: 14px;">
-        <div class="row" style="align-items:flex-start;">
-          <div class="grow">
-            <h3 style="margin:0; font-size: 16px;">Decision thresholds</h3>
-            <div class="muted" style="margin-top: 6px; font-size: 14px;">
-              “Selection threshold” is the score accuracy needed for your selected set not to change.
-            </div>
-            <table id="bpTable" style="margin-top: 10px;"></table>
-          </div>
-          <div style="width: 1px; background: #eee; margin: 0 12px;"></div>
-          <div class="grow">
-            <h3 style="margin:0; font-size: 16px;">Tie bands</h3>
-            <div class="muted" style="margin-top: 6px; font-size: 14px;">
-              Items in the same band cannot be reliably separated at the current wiggle room.
-            </div>
-            <div id="clusters" style="margin-top: 10px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top: 14px;">
-        <div class="row">
-          <div class="grow">
-            <h3 style="margin:0; font-size: 16px;">Scores (sorted)</h3>
-            <div class="muted" style="margin-top: 6px; font-size: 14px;">
-              Dense packing near the selection boundary often means an unstable cutoff.
-            </div>
-            <canvas id="scorePlot" width="1000" height="260" style="margin-top: 10px;"></canvas>
-          </div>
-          <div class="grow">
-            <h3 style="margin:0; font-size: 16px;">Adjacent gaps</h3>
-            <div class="muted" style="margin-top: 6px; font-size: 14px;">
-              Gaps below <code>2 × wiggle room</code> indicate adjacent items can swap.
-            </div>
-            <canvas id="gapPlot" width="1000" height="260" style="margin-top: 10px;"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top: 14px;">
-        <h3 style="margin:0; font-size: 16px;">Preview (sorted)</h3>
-        <table id="preview" style="margin-top: 10px;"></table>
-      </div>
-
-      <div id="mcOut" class="card" style="display:none; margin-top: 14px;">
-        <h3 style="margin:0; font-size: 16px;">Stress test results</h3>
-        <div id="mcSummary" class="bigLine" style="margin-top: 10px;"></div>
-
-        <div class="row" style="margin-top: 12px; gap: 14px; align-items:flex-start;">
-          <div class="grow panel">
-            <h3>Selection stability</h3>
-            <table id="mcTopKTable" style="margin-top: 10px;"></table>
-            <div class="muted" style="margin-top: 10px;">
-              “Selected set unchanged” is how often the chosen set is identical under score error.
-            </div>
-          </div>
-          <div class="grow panel">
-            <h3>Per-item movement (first 30)</h3>
-            <table id="mcMoveTable" style="margin-top: 10px;"></table>
-          </div>
-        </div>
-
-        <div class="panel" style="margin-top: 14px;">
-          <h3>Selection inclusion probabilities (first 30)</h3>
-          <table id="mcInclTable" style="margin-top: 10px;"></table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Maths modal -->
-  <div id="mathBackdrop" class="backdrop" role="dialog" aria-modal="true" aria-labelledby="mathTitle">
     <div class="modal">
       <div class="modalHeader">
         <div>
@@ -624,19 +602,24 @@
         <button class="closeBtn" id="closeMath">Close</button>
       </div>
       <div class="modalBody">
-        <div class="callout">
+        <div class="callout info">
           <strong>What this tool proves</strong><br>
           If your scores can be wrong by up to <code>±ε</code>, the tool can determine whether the selection boundary can flip,
           and can compute the exact score accuracy required to prevent that flip.
         </div>
 
-        <h3 style="margin-top: 16px;">1) Model: bounded score error</h3>
+        <h3>1) Model: bounded score error</h3>
         <p>
-          Each score may be wrong by at most a “wiggle room” amount, written <code>±ε</code>.
+          Each score may be wrong by at most a "wiggle room" amount, written <code>±ε</code>.
           This is not claiming the true distribution of error.
           It is a stress model for decision hygiene:
-          “If scoring could be off by this much, would the decision change?”
+          "If scoring could be off by this much, would the decision change?"
         </p>
+        
+        <div class="callout">
+          <strong>Example:</strong> You score candidates on a 0-100 scale. After calibration, you believe raters 
+          are typically within ±2 points of each other. Your wiggle room would be ε = 2.
+        </div>
 
         <h3>2) The selection threshold</h3>
         <p>
@@ -655,13 +638,28 @@
         </p>
         <p>
           That is why the tool can say, precisely:
-          “To keep this selection stable, your scoring must be accurate within ±X.”
+          "To keep this selection stable, your scoring must be accurate within ±X."
         </p>
+        
+        <div class="callout success">
+          <strong>Concrete example:</strong><br>
+          • Candidate #5 scores 91.2<br>
+          • Candidate #6 scores 90.9<br>
+          • Gap = 0.3 points<br>
+          • Selection threshold = 0.3 / 2 = 0.15<br>
+          <br>
+          <strong>Interpretation:</strong> If your scoring is accurate within ±0.15 points, the top-5 selection won't flip. 
+          If scoring could be off by ±0.2 points, candidates #5 and #6 might swap.
+        </div>
 
         <h3>3) Tie bands</h3>
         <p>
           Two adjacent items are not reliably separable at wiggle room <code>ε</code> if their gap is ≤ <code>2ε</code>.
           The tool groups consecutive items into tie bands by that rule.
+        </p>
+        <p>
+          If ranks 4, 5, 6, and 7 all have gaps ≤ 2ε between them, they form a tie band. You cannot 
+          reliably distinguish them at your stated level of uncertainty.
         </p>
 
         <h3>4) Stress test</h3>
@@ -670,13 +668,278 @@
           It reports how often the selected set stays identical and which items are borderline.
           This captures the combinatorial effect of many small simultaneous errors.
         </p>
+        
+        <h3>5) What this tool does NOT do</h3>
+        <div class="callout warning">
+          <strong>Important limitations:</strong>
+          <ul>
+            <li>Does not estimate the "true" error distribution of your scoring</li>
+            <li>Does not detect or correct for systematic bias</li>
+            <li>Does not tell you if your scores are measuring the right thing</li>
+            <li>Does not validate that your selection criteria are fair or appropriate</li>
+          </ul>
+          This tool checks <strong>precision</strong> (score stability), not <strong>validity</strong> (whether scores measure what you think) 
+          or <strong>fairness</strong> (whether scoring disadvantages groups).
+        </div>
+        
+        <h3>6) How to use this responsibly</h3>
+        <p>
+          <strong>Good use:</strong> "Our interview scores might vary by ±3 points. Let's check if our top-5 
+          selection is stable enough to defend, or if we should treat the boundary as a tie."
+        </p>
+        <p>
+          <strong>Bad use:</strong> "The tool said 'defensible cutoff' so our ranking must be correct and fair."
+        </p>
+        <p>
+          The tool provides a <em>mathematical check on precision</em>. It cannot fix a flawed scoring system, 
+          detect bias, or validate your criteria. Use it as one input among many for making fair, thoughtful decisions.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick guide modal -->
+  <div id="guideBackdrop" class="backdrop" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+    <div class="modal">
+      <div class="modalHeader">
+        <div>
+          <div class="modalTitle" id="guideTitle">Quick start guide</div>
+        </div>
+        <button class="closeBtn" id="closeGuide">Close</button>
+      </div>
+      <div class="modalBody">
+        <h3>When to use RankSmarter</h3>
+        <p>Use this tool when you have:</p>
+        <ul>
+          <li>A ranked list based on scores (interviews, bids, grant applications, etc.)</li>
+          <li>A selection boundary ("hire the top 5", "fund the top 10")</li>
+          <li>Concern that small scoring differences might not be meaningful</li>
+        </ul>
+        
+        <h3>Step-by-step process</h3>
+        
+        <h4 style="font-size: 15px; margin-top: 16px;">1. Prepare your data</h4>
+        <p>Create a CSV with two columns:</p>
+        <ul>
+          <li><strong>Item column:</strong> Names, IDs, or labels (e.g., "Candidate A", "Vendor XYZ")</li>
+          <li><strong>Score column:</strong> Numeric scores (e.g., interview scores, cost estimates)</li>
+        </ul>
+        <p>Example:</p>
+        <div style="background: var(--soft); padding: 8px; border-radius: 8px; font-family: monospace; font-size: 13px;">
+          item,score<br>
+          Alice,95.2<br>
+          Bob,94.8<br>
+          Carol,93.1
+        </div>
+        
+        <h4 style="font-size: 15px; margin-top: 16px;">2. Choose your selection size</h4>
+        <p>How many items are you selecting? (e.g., "hire top 5 candidates")</p>
+        
+        <h4 style="font-size: 15px; margin-top: 16px;">3. Set your wiggle room</h4>
+        <p>This is the maximum error you admit might exist in your scores. Ask yourself:</p>
+        <ul>
+          <li><strong>Hiring interviews:</strong> If two raters scored the same candidate, how much might they differ? (±2-5 points typical)</li>
+          <li><strong>Vendor bids:</strong> What's the margin of error in cost estimates? (±5-10% typical)</li>
+          <li><strong>Grant scoring:</strong> How consistent are reviewers? (±0.5-1.0 points on 5-point scale typical)</li>
+        </ul>
+        
+        <div class="callout warning">
+          <strong>Be honest!</strong> Underestimating wiggle room gives false confidence. When in doubt, 
+          start with a larger wiggle room and see if your boundary holds.
+        </div>
+        
+        <h4 style="font-size: 15px; margin-top: 16px;">4. Interpret the verdict</h4>
+        
+        <p><strong>If "Defensible cutoff":</strong></p>
+        <ul>
+          <li>Your selection boundary is stable at the stated wiggle room</li>
+          <li>The gap between selected/rejected is large enough</li>
+          <li>Proceed with confidence (but still review for bias separately)</li>
+        </ul>
+        
+        <p><strong>If "Likely fake precision":</strong></p>
+        <ul>
+          <li>Small score errors could flip who gets selected</li>
+          <li>You're treating near-ties as if they're distinct</li>
+          <li>Follow the "tie band" recommendation</li>
+        </ul>
+        
+        <h3>What to do with tie bands</h3>
+        <p>If the tool recommends treating ranks 4-7 as a tie band:</p>
+        <ul>
+          <li><strong>Option 1:</strong> Interview all 4 finalists (if feasible)</li>
+          <li><strong>Option 2:</strong> Use a secondary criterion to break ties</li>
+          <li><strong>Option 3:</strong> Improve scoring accuracy (more raters, clearer rubric)</li>
+          <li><strong>Option 4:</strong> Acknowledge you're making a borderline call and document the uncertainty</li>
+        </ul>
+        
+        <div class="callout info">
+          <strong>The point is honesty:</strong> Don't pretend you have precision you don't. When scores 
+          are too close to call, admit it and handle the decision accordingly.
+        </div>
+        
+        <h3>Common mistakes to avoid</h3>
+        <ul>
+          <li>❌ Using tiny wiggle room to get "defensible" verdict</li>
+          <li>❌ Treating "defensible" as proof the ranking is correct</li>
+          <li>❌ Ignoring systematic bias because scores are "precise"</li>
+          <li>❌ Using the tool retroactively to justify a decision already made</li>
+        </ul>
+        
+        <h3>Keyboard shortcuts</h3>
+        <ul>
+          <li><strong>Ctrl+U:</strong> Jump to upload section</li>
+          <li><strong>Escape:</strong> Close modal dialogs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wiggle room help modal -->
+  <div id="wiggleBackdrop" class="backdrop" role="dialog" aria-modal="true" aria-labelledby="wiggleTitle">
+    <div class="modal">
+      <div class="modalHeader">
+        <div>
+          <div class="modalTitle" id="wiggleTitle">How to choose wiggle room</div>
+          <div class="muted" style="font-size: 13px; margin-top: 2px;">Domain-specific guidance</div>
+        </div>
+        <button class="closeBtn" id="closeWiggle">Close</button>
+      </div>
+      <div class="modalBody">
+        <p>
+          "Wiggle room" (ε) is the maximum score error you're willing to admit. This is the most important choice 
+          you'll make when using this tool. <strong>Be conservative.</strong> Underestimating error gives false confidence.
+        </p>
+        
+        <div class="callout warning">
+          <strong>Key principle:</strong> Your wiggle room should reflect the <em>actual variability</em> in your 
+          scoring process, not your aspirational precision.
+        </div>
+        
+        <h3>How to estimate wiggle room</h3>
+        
+        <h4 style="font-size: 15px; margin-top: 16px;">Method 1: Inter-rater reliability</h4>
+        <p>
+          If multiple people score the same items:
+        </p>
+        <ul>
+          <li>Have 2-3 raters score a sample of the same items</li>
+          <li>Calculate the typical absolute difference between raters</li>
+          <li>Use this as your wiggle room estimate</li>
+        </ul>
+        <p><strong>Example:</strong> Two interviewers score 10 candidates. Differences average ±3.2 points. Use ε ≈ 3.5 as wiggle room.</p>
+        
+        <h4 style="font-size: 15px; margin-top: 16px;">Method 2: Test-retest reliability</h4>
+        <p>
+          If one person scores items multiple times:
+        </p>
+        <ul>
+          <li>Score a sample, wait a week, score again</li>
+          <li>Calculate typical change in scores</li>
+          <li>This reveals your own consistency limits</li>
+        </ul>
+        
+        <h4 style="font-size: 15px; margin-top: 16px;">Method 3: Domain heuristics</h4>
+        <p>Use these as starting points based on your context:</p>
+        
+        <div class="domain-examples">
+          <div class="domain-card" data-eps-pct="0.5">
+            <h4>📋 Structured interviews (calibrated raters)</h4>
+            <p>Clear rubric, trained raters, standardized questions</p>
+            <span class="recommended">Recommended: ±0.5-1% of scale</span>
+          </div>
+          
+          <div class="domain-card" data-eps-pct="1.5">
+            <h4>💼 Unstructured interviews</h4>
+            <p>Varying questions, uncalibrated raters, subjective criteria</p>
+            <span class="recommended">Recommended: ±1.5-3% of scale</span>
+          </div>
+          
+          <div class="domain-card" data-eps-pct="0.75">
+            <h4>🏢 Vendor scoring (technical criteria)</h4>
+            <p>Quantifiable metrics, clear specifications</p>
+            <span class="recommended">Recommended: ±0.75-1.5% of scale</span>
+          </div>
+          
+          <div class="domain-card" data-eps-pct="2.0">
+            <h4>📝 Grant applications</h4>
+            <p>Multiple criteria, expert reviewers, some subjectivity</p>
+            <span class="recommended">Recommended: ±1-2% of scale</span>
+          </div>
+          
+          <div class="domain-card" data-eps-pct="1.0">
+            <h4>📊 Performance reviews</h4>
+            <p>Mixed quantitative/qualitative, manager judgment</p>
+            <span class="recommended">Recommended: ±1-2% of scale</span>
+          </div>
+          
+          <div class="domain-card" data-eps-pct="0.25">
+            <h4>🔢 Quantitative scores (hard metrics)</h4>
+            <p>Test scores, sales figures, objective measurements</p>
+            <span class="recommended">Recommended: ±0.25-0.5% of scale</span>
+          </div>
+        </div>
+        
+        <h3>Converting to absolute values</h3>
+        <p>Once you know the % of scale:</p>
+        <ul>
+          <li><strong>0-100 scale:</strong> 1% = 1 point, so ±1.5% = ±1.5 points</li>
+          <li><strong>1-5 scale:</strong> Range is 4, so ±2% of range = ±0.08 points</li>
+          <li><strong>1-10 scale:</strong> Range is 9, so ±1% of range = ±0.09 points</li>
+        </ul>
+        
+        <h3>When in doubt</h3>
+        <div class="callout info">
+          <strong>Conservative approach:</strong> If you're unsure, start with a <em>larger</em> wiggle room 
+          (e.g., 1-2% of scale). If your boundary is still defensible at high wiggle room, you can be confident. 
+          If it's not, you've identified a real problem.
+        </div>
+        
+        <h3>Red flags that suggest larger wiggle room</h3>
+        <ul>
+          <li>✗ Raters haven't been trained or calibrated</li>
+          <li>✗ Scoring criteria are vague or subjective</li>
+          <li>✗ You're scoring under time pressure</li>
+          <li>✗ Items being scored are genuinely ambiguous</li>
+          <li>✗ Stakes are high (legal/ethical exposure)</li>
+        </ul>
+        
+        <p>
+          In these cases, consider 1.5-3% of scale range, or conduct a quick inter-rater reliability study 
+          to estimate realistic error bounds.
+        </p>
       </div>
     </div>
   </div>
 
   <script>
     // ---------------------------
-    // Robust CSV parsing (quoted fields supported)
+    // Theme toggle
+    // ---------------------------
+    const themeToggle = document.getElementById("themeToggle");
+    const themeIcon = document.getElementById("themeIcon");
+    let currentTheme = localStorage.getItem("theme") || "light";
+    
+    function applyTheme(theme) {
+      if (theme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        themeIcon.textContent = "☀️";
+      } else {
+        document.documentElement.removeAttribute("data-theme");
+        themeIcon.textContent = "🌙";
+      }
+      currentTheme = theme;
+      localStorage.setItem("theme", theme);
+    }
+    
+    applyTheme(currentTheme);
+    
+    themeToggle.addEventListener("click", () => {
+      applyTheme(currentTheme === "dark" ? "light" : "dark");
+    });
+
+    // ---------------------------
+    // Core functions
     // ---------------------------
     function parseCSVRobust(text) {
       const rows = [];
@@ -686,7 +949,6 @@
 
       for (let i = 0; i < text.length; i++) {
         const c = text[i];
-
         if (inQuotes) {
           if (c === '"') {
             const next = text[i + 1];
@@ -703,14 +965,12 @@
       }
       row.push(field);
       rows.push(row);
-
       const cleaned = rows.map(r => r.map(x => (x ?? "").trim())).filter(r => r.some(x => x !== ""));
       if (cleaned.length < 2) throw new Error("CSV must have a header row and at least one data row.");
       return cleaned;
     }
 
     function toLowerTrim(s){ return (s ?? "").toString().trim().toLowerCase(); }
-
     function guessColumn(headers, candidates){
       const lower = headers.map(toLowerTrim);
       for (const c of candidates){
@@ -719,7 +979,6 @@
       }
       return -1;
     }
-
     function safeNumber(x){
       if (x == null) return null;
       const s = x.toString().trim();
@@ -727,9 +986,7 @@
       const n = Number(s.replace(/,/g, ""));
       return Number.isFinite(n) ? n : null;
     }
-
     function sortDesc(rows){ return [...rows].sort((a,b)=>b.score-a.score); }
-
     function computeBreakpoints(sorted){
       const n = sorted.length;
       const gaps = [];
@@ -737,7 +994,6 @@
       const epsAnyFlip = Math.min(...gaps) / 2;
       return { gaps, epsAnyFlip };
     }
-
     function clustersAtEps(sorted, eps){
       const clusters = [];
       let current = [sorted[0]];
@@ -749,7 +1005,6 @@
       clusters.push(current);
       return clusters;
     }
-
     function fmt(x){
       if (!Number.isFinite(x)) return "n/a";
       const ax = Math.abs(x);
@@ -757,9 +1012,7 @@
       if (ax >= 1) return x.toFixed(3);
       return x.toFixed(4);
     }
-
     function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
-
     function renderTable(el, headers, rows){
       el.innerHTML = "";
       const thead = document.createElement("thead");
@@ -771,13 +1024,12 @@
       });
       thead.appendChild(trh);
       el.appendChild(thead);
-
       const tbody = document.createElement("tbody");
       rows.forEach(r=>{
         const tr = document.createElement("tr");
         r.forEach(cell=>{
           const td = document.createElement("td");
-          td.textContent = cell;
+          td.innerHTML = cell;
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
@@ -785,51 +1037,46 @@
       el.appendChild(tbody);
     }
 
-    // ---------------------------
-    // Plotting
-    // ---------------------------
     function drawPlot(canvas, ys, opts){
       const ctx = canvas.getContext("2d");
       const w = canvas.width, h = canvas.height;
       ctx.clearRect(0,0,w,h);
-
       const padL=52, padR=14, padT=16, padB=34;
       const innerW = w-padL-padR;
       const innerH = h-padT-padB;
-
       const n = ys.length;
       const yMin = Math.min(...ys);
       const yMax = Math.max(...ys);
       const ySpan = (yMax-yMin) || 1;
-
-      ctx.strokeStyle = "#bbb";
+      const computedStyle = getComputedStyle(document.documentElement);
+      const borderColor = computedStyle.getPropertyValue('--border').trim() || '#e7e7e7';
+      const mutedColor = computedStyle.getPropertyValue('--muted').trim() || '#5a5a5a';
+      const textColor = computedStyle.getPropertyValue('--text').trim() || '#111';
+      ctx.strokeStyle = borderColor;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(padL,padT);
       ctx.lineTo(padL,padT+innerH);
       ctx.lineTo(padL+innerW,padT+innerH);
       ctx.stroke();
-
-      ctx.fillStyle = "#666";
+      ctx.fillStyle = mutedColor;
       ctx.font = "13px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
       ctx.fillText(opts.yLabel || "", 10, 16);
-
       const ticks = 4;
       for (let t=0;t<=ticks;t++){
         const y = padT+innerH-(t/ticks)*innerH;
         const v = yMin+(t/ticks)*ySpan;
-
-        ctx.strokeStyle = "#f0f0f0";
+        ctx.strokeStyle = borderColor;
+        ctx.globalAlpha = 0.3;
         ctx.beginPath();
         ctx.moveTo(padL,y);
         ctx.lineTo(padL+innerW,y);
         ctx.stroke();
-
-        ctx.fillStyle = "#777";
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = mutedColor;
         ctx.fillText(fmt(v), 10, y+4);
       }
-
-      ctx.fillStyle = "#111";
+      ctx.fillStyle = textColor;
       for (let i=0;i<n;i++){
         const x = padL + (n===1 ? innerW/2 : (i/(n-1))*innerW);
         const y = padT + innerH - ((ys[i]-yMin)/ySpan)*innerH;
@@ -837,23 +1084,34 @@
         ctx.arc(x,y,2.4,0,Math.PI*2);
         ctx.fill();
       }
-
       if (opts.threshold != null){
         const tv = opts.threshold;
         const y = padT + innerH - ((tv-yMin)/ySpan)*innerH;
-        ctx.strokeStyle = "#b66";
+        ctx.strokeStyle = "#dc2626";
+        ctx.lineWidth = 2;
         ctx.setLineDash([6,4]);
         ctx.beginPath();
         ctx.moveTo(padL,y);
         ctx.lineTo(padL+innerW,y);
         ctx.stroke();
         ctx.setLineDash([]);
+        ctx.lineWidth = 1;
+      }
+      if (opts.boundaryIndex != null && n > 1){
+        const idx = opts.boundaryIndex;
+        const x = padL + (idx/(n-1))*innerW;
+        ctx.strokeStyle = "#dc2626";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4,4]);
+        ctx.beginPath();
+        ctx.moveTo(x,padT);
+        ctx.lineTo(x,padT+innerH);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.lineWidth = 1;
       }
     }
 
-    // ---------------------------
-    // Monte Carlo stress test
-    // ---------------------------
     function mulberry32(seed){
       let a = seed >>> 0;
       return function(){
@@ -867,41 +1125,32 @@
     function runMonteCarlo(sorted, eps, nSamp, seed, k){
       const rng = mulberry32(seed);
       const n = sorted.length;
-
       const selected0 = new Set(sorted.slice(0,k).map(r=>r.item));
       let setSameCount = 0;
       let overlapSum = 0;
-
       const inCount = new Map();
       sorted.forEach(r=>inCount.set(r.item, 0));
-
       const stats = new Map();
       sorted.forEach((r,i)=>{
         stats.set(r.item, { origRank:i+1, same:0, minRank:i+1, maxRank:i+1, sumAbs:0 });
       });
-
       for (let s=0;s<nSamp;s++){
         const pert = sorted.map(r=>{
           const u = rng();
           const delta = (u*2 - 1) * eps;
           return { item:r.item, score:r.score + delta };
         }).sort((a,b)=>b.score-a.score);
-
         const selectedT = pert.slice(0,k).map(r=>r.item);
         const selectedSet = new Set(selectedT);
-
         let same = true;
         for (const it of selected0){
           if (!selectedSet.has(it)){ same = false; break; }
         }
         if (same && selectedSet.size === selected0.size) setSameCount++;
-
         let overlap = 0;
         for (const it of selectedSet) if (selected0.has(it)) overlap++;
         overlapSum += overlap;
-
         for (const it of selectedSet) inCount.set(it, inCount.get(it) + 1);
-
         pert.forEach((r,idx)=>{
           const st = stats.get(r.item);
           const rk = idx+1;
@@ -911,7 +1160,6 @@
           st.sumAbs += Math.abs(rk - st.origRank);
         });
       }
-
       const rows = [];
       stats.forEach((st,item)=>{
         rows.push({
@@ -924,7 +1172,6 @@
         });
       });
       rows.sort((a,b)=>a.origRank-b.origRank);
-
       const selection = {
         k,
         setSameProb: setSameCount/nSamp,
@@ -932,13 +1179,127 @@
         inclusionProb: Array.from(inCount.entries()).map(([item,cnt])=>({ item, prob: cnt/nSamp }))
           .sort((a,b)=>b.prob-a.prob)
       };
-
       return { rows, nSamp, seed, eps, selection };
     }
 
-    // ---------------------------
-    // UI wiring
-    // ---------------------------
+    function exportJSON(){
+      const eps = Number(epsSlider.value) || 0;
+      const k = selectionSize();
+      const epsSel = (state.sorted[k-1].score - state.sorted[k].score)/2;
+      const result = {
+        meta: {
+          generated_at: new Date().toISOString(),
+          tool: "RankSmarter",
+          version: "2.0",
+          note: "Decision hygiene tool. Thresholds derived from score spacing. This does not estimate true uncertainty."
+        },
+        input: {
+          n_items: state.sorted.length,
+          selection_size: k,
+          wiggle_room_abs: eps,
+          wiggle_room_pct_of_range: (eps/state.range)*100
+        },
+        verdict: {
+          stable: epsSel > eps,
+          verdict_text: verdictLine.textContent,
+          action_text: actionLine.textContent
+        },
+        thresholds: {
+          selection_flip_requires_accuracy_within: {
+            abs: epsSel,
+            pct_of_range: (epsSel/state.range)*100
+          },
+          any_swap_requires_accuracy_within: {
+            abs: state.bps.epsAnyFlip,
+            pct_of_range: (state.bps.epsAnyFlip/state.range)*100
+          }
+        },
+        tie_bands: clustersAtEps(state.sorted, eps).map(cluster => cluster.map(x=>x.item)),
+        scores: state.sorted.slice(0,50)
+      };
+      const blob = new Blob([JSON.stringify(result,null,2)], { type:"application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ranksmarter_result.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+    
+    function exportMarkdown(){
+      const eps = Number(epsSlider.value) || 0;
+      const k = selectionSize();
+      const epsSel = (state.sorted[k-1].score - state.sorted[k].score)/2;
+      const stable = epsSel > eps;
+      const bands = clustersAtEps(state.sorted, eps);
+      let md = `# RankSmarter Analysis Report
+
+**Generated:** ${new Date().toLocaleString()}
+
+## Summary
+
+- **Items analyzed:** ${state.sorted.length}
+- **Selection size:** Top ${k}
+- **Wiggle room:** ±${fmt(eps)} (${((eps/state.range)*100).toFixed(2)}% of score range)
+- **Score range:** ${fmt(state.min)} to ${fmt(state.max)}
+
+## Verdict
+
+**${stable ? '✅ Defensible cutoff' : '⚠️ Likely fake precision'}**
+
+${verdictLine.textContent}
+
+## Action
+
+${actionLine.textContent}
+
+${whyLine.textContent}
+
+## Decision Thresholds
+
+- **Selection threshold:** ±${fmt(epsSel)} (${((epsSel/state.range)*100).toFixed(2)}% of range)
+  - This is the accuracy needed to keep the top-${k} selection stable
+- **Any-swap threshold:** ±${fmt(state.bps.epsAnyFlip)} (${((state.bps.epsAnyFlip/state.range)*100).toFixed(2)}% of range)
+  - This is the accuracy needed to prevent any adjacent items from swapping
+
+## Tie Bands
+
+At the current wiggle room, ${bands.length} tie band${bands.length===1?'':'s'} detected:
+
+${bands.map((cluster, idx) => {
+  const ranks = cluster.map(x=>state.sorted.indexOf(x)+1);
+  const from = Math.min(...ranks);
+  const to = Math.max(...ranks);
+  const items = cluster.map(x=>x.item).join(", ");
+  return `### Band ${idx+1}: Ranks ${from}-${to}\n${items}`;
+}).join('\n\n')}
+
+## Top ${Math.min(20, state.sorted.length)} Items (Sorted)
+
+| Rank | Item | Score |
+|------|------|-------|
+${state.sorted.slice(0,20).map((r,i)=>`| ${i+1} | ${r.item} | ${r.score} |`).join('\n')}
+
+---
+
+*Generated by [RankSmarter](https://ranksmarter.github.io/ranksmarter/) - Mathematical reality check for rankings*
+
+**Important:** This analysis checks score precision, not fairness or validity. Always review for systematic bias separately.
+`;
+      const blob = new Blob([md], { type:"text/markdown" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ranksmarter_summary.md";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // UI Elements
     const jumpUpload = document.getElementById("jumpUpload");
     const fileInput = document.getElementById("file");
     const mapRow = document.getElementById("mapRow");
@@ -947,50 +1308,49 @@
     const applyMapBtn = document.getElementById("applyMap");
     const parseStatus = document.getElementById("parseStatus");
     const previewN = document.getElementById("previewN");
-
     const controls = document.getElementById("controls");
     const pickN = document.getElementById("pickN");
     const customPickWrap = document.getElementById("customPickWrap");
     const kInput = document.getElementById("k");
     const exportJsonBtn = document.getElementById("exportJson");
-
+    const exportMarkdownBtn = document.getElementById("exportMarkdown");
     const preset = document.getElementById("preset");
     const customEpsWrap = document.getElementById("customEpsWrap");
     const epsSlider = document.getElementById("eps");
     const epsLabel = document.getElementById("epsLabel");
     const epsPct = document.getElementById("epsPct");
     const epsPctInput = document.getElementById("epsPctInput");
-
     const mcEnable = document.getElementById("mcEnable");
     const mcN = document.getElementById("mcN");
     const mcSeed = document.getElementById("mcSeed");
     const runMcBtn = document.getElementById("runMc");
-
     const out = document.getElementById("out");
     const verdictLine = document.getElementById("verdictLine");
     const verdictPill = document.getElementById("verdictPill");
     const actionLine = document.getElementById("actionLine");
     const whyLine = document.getElementById("whyLine");
-
+    const actionSteps = document.getElementById("actionSteps");
     const bpTable = document.getElementById("bpTable");
     const clustersDiv = document.getElementById("clusters");
     const previewTable = document.getElementById("preview");
     const scorePlot = document.getElementById("scorePlot");
     const gapPlot = document.getElementById("gapPlot");
-
     const mcOut = document.getElementById("mcOut");
     const mcSummary = document.getElementById("mcSummary");
     const mcTopKTable = document.getElementById("mcTopKTable");
     const mcMoveTable = document.getElementById("mcMoveTable");
     const mcInclTable = document.getElementById("mcInclTable");
-
-    // Modal
     const mathBackdrop = document.getElementById("mathBackdrop");
     const openMath = document.getElementById("openMath");
     const openMathHero = document.getElementById("openMathHero");
     const openMath2 = document.getElementById("openMath2");
     const closeMath = document.getElementById("closeMath");
-
+    const guideBackdrop = document.getElementById("guideBackdrop");
+    const openGuide = document.getElementById("openGuide");
+    const closeGuide = document.getElementById("closeGuide");
+    const wiggleBackdrop = document.getElementById("wiggleBackdrop");
+    const openWiggleHelp = document.getElementById("openWiggleHelp");
+    const closeWiggle = document.getElementById("closeWiggle");
     const loadDemoBtn = document.getElementById("loadDemo");
     const downloadExampleBtn = document.getElementById("downloadExample");
 
@@ -998,13 +1358,33 @@
 
     function openMathModal(e){ if (e) e.preventDefault(); mathBackdrop.style.display = "flex"; }
     function closeMathModal(e){ if (e) e.preventDefault(); mathBackdrop.style.display = "none"; }
+    function openGuideModal(e){ if (e) e.preventDefault(); guideBackdrop.style.display = "flex"; }
+    function closeGuideModal(e){ if (e) e.preventDefault(); guideBackdrop.style.display = "none"; }
+    function openWiggleModal(e){ if (e) e.preventDefault(); wiggleBackdrop.style.display = "flex"; }
+    function closeWiggleModal(e){ if (e) e.preventDefault(); wiggleBackdrop.style.display = "none"; }
 
     openMath.addEventListener("click", openMathModal);
     openMathHero.addEventListener("click", openMathModal);
     openMath2.addEventListener("click", openMathModal);
     closeMath.addEventListener("click", closeMathModal);
     mathBackdrop.addEventListener("click", (e)=>{ if (e.target === mathBackdrop) closeMathModal(e); });
-    document.addEventListener("keydown", (e)=>{ if (e.key === "Escape") mathBackdrop.style.display = "none"; });
+    openGuide.addEventListener("click", openGuideModal);
+    closeGuide.addEventListener("click", closeGuideModal);
+    guideBackdrop.addEventListener("click", (e)=>{ if (e.target === guideBackdrop) closeGuideModal(e); });
+    openWiggleHelp.addEventListener("click", openWiggleModal);
+    closeWiggle.addEventListener("click", closeWiggleModal);
+    wiggleBackdrop.addEventListener("click", (e)=>{ if (e.target === wiggleBackdrop) closeWiggleModal(e); });
+    document.addEventListener("keydown", (e)=>{ 
+      if (e.key === "Escape") {
+        mathBackdrop.style.display = "none"; 
+        guideBackdrop.style.display = "none";
+        wiggleBackdrop.style.display = "none";
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "u") {
+        e.preventDefault();
+        jumpUpload.click();
+      }
+    });
 
     jumpUpload.addEventListener("click", ()=>{
       document.getElementById("uploadCard").scrollIntoView({ behavior:"smooth", block:"start" });
@@ -1031,7 +1411,6 @@
         rows.push({ item, score });
       }
       if (rows.length < 2) throw new Error("Need at least two valid rows with non-empty item and numeric score.");
-
       const sorted = sortDesc(rows);
       const scores = sorted.map(r=>r.score);
       const min = Math.min(...scores);
@@ -1045,7 +1424,6 @@
       if (!state) return 1;
       const v = pickN.value;
       const n = state.sorted.length;
-
       if (v === "custom"){
         customPickWrap.style.display = "block";
         const k = clamp(Math.floor(Number(kInput.value) || 1), 1, n-1);
@@ -1067,13 +1445,10 @@
       const n = sorted.length;
       const cutIdx = k-1;
       if (cutIdx < 0 || cutIdx >= n-1) return null;
-
       const gapAtCut = sorted[cutIdx].score - sorted[cutIdx+1].score;
       if (gapAtCut > 2*eps) return null;
-
       let lo = cutIdx;
       let hi = cutIdx+1;
-
       while (lo > 0){
         const g = sorted[lo-1].score - sorted[lo].score;
         if (g <= 2*eps) lo--;
@@ -1100,130 +1475,124 @@
       epsSlider.min = "0";
       epsSlider.max = String(maxEps);
       epsSlider.step = String(maxEps/500);
-
-      // Apply default preset
       const pct = Number(epsPctInput.value) || 0.5;
       setEpsFromPct(pct);
     }
 
     function updateOutputs(){
       if (!state) return;
-
       const eps = Number(epsSlider.value) || 0;
       const pct = (eps/state.range)*100;
       epsLabel.textContent = fmt(eps);
       epsPct.textContent = pct.toFixed(2) + "%";
-
       const k = selectionSize();
       const n = state.sorted.length;
-
       const epsSel = (state.sorted[k-1].score - state.sorted[k].score) / 2;
       const needSelPct = (epsSel/state.range)*100;
-
       const stable = epsSel > eps;
 
-      // Verdict presentation
       verdictPill.style.display = "inline-flex";
+      actionSteps.innerHTML = "";
+      
       if (stable){
         verdictPill.innerHTML = `<span class="dot ok"></span><span>Defensible cutoff</span>`;
         verdictLine.innerHTML = `Selecting <strong>${k}</strong> is defensible under the current assumptions.`;
         actionLine.innerHTML = `Proceed with a strict selection of <strong>${k}</strong>.`;
         whyLine.textContent = `To keep this selection stable, scoring must be accurate within about ±${needSelPct.toFixed(2)}% of the score range (±${fmt(epsSel)}).`;
+        actionSteps.innerHTML = `
+          <div class="callout success" style="margin-top: 12px;">
+            <strong>✅ Your boundary is defensible</strong><br>
+            At your stated wiggle room, the selection boundary is stable. However:
+            <ul class="action-steps">
+              <li>Still review for systematic bias (this tool checks precision, not fairness)</li>
+              <li>Document your wiggle room assumption in case of audit</li>
+              <li>Consider running the stress test to see empirical stability</li>
+            </ul>
+          </div>
+        `;
       } else {
         verdictPill.innerHTML = `<span class="dot warn"></span><span>Likely fake precision</span>`;
         verdictLine.innerHTML = `A strict selection of <strong>${k}</strong> is not defensible.`;
-
         const band = bandSuggestion(state.sorted, eps, k);
         if (band){
           actionLine.innerHTML = `Treat ranks <strong>${band.loRank} to ${band.hiRank}</strong> as a tie band.`;
           whyLine.textContent = `At the current wiggle room, items near the boundary can swap in and out of the selected set.`;
+          const bandSize = band.hiRank - band.loRank + 1;
+          actionSteps.innerHTML = `
+            <div class="callout warning" style="margin-top: 12px;">
+              <strong>⚠️ What to do about tie bands</strong><br>
+              You have ${bandSize} items in the boundary tie band. Consider:
+              <ul class="action-steps">
+                <li><strong>Option 1:</strong> Interview/evaluate all ${bandSize} finalists if feasible</li>
+                <li><strong>Option 2:</strong> Use a secondary criterion to break ties</li>
+                <li><strong>Option 3:</strong> Improve scoring accuracy (more raters, clearer rubrics, calibration)</li>
+                <li><strong>Option 4:</strong> Acknowledge the uncertainty and document that you're making a judgment call</li>
+                <li><strong>Not recommended:</strong> Pretend the scores are more precise than they are</li>
+              </ul>
+            </div>
+          `;
         } else {
           actionLine.innerHTML = `Avoid a hard cutoff unless you can defend higher score accuracy.`;
           whyLine.textContent = `At the current wiggle room, the selection boundary can flip.`;
+          actionSteps.innerHTML = `
+            <div class="callout warning" style="margin-top: 12px;">
+              <strong>⚠️ Your options:</strong>
+              <ul class="action-steps">
+                <li><strong>Option 1:</strong> Reduce your wiggle room (if you can genuinely defend higher accuracy)</li>
+                <li><strong>Option 2:</strong> Expand the selection size to include borderline items</li>
+                <li><strong>Option 3:</strong> Improve your scoring process before making the decision</li>
+                <li><strong>Option 4:</strong> Acknowledge the uncertainty inherent in your selection</li>
+              </ul>
+            </div>
+          `;
         }
       }
 
-      // Threshold table
       const epsAny = state.bps.epsAnyFlip;
       const needAnyPct = (epsAny/state.range)*100;
-
       renderTable(bpTable, ["Threshold", "Meaning", "Required accuracy"], [
         ["Selection threshold", `Keep the selected set (select ${k}) unchanged`, `±${needSelPct.toFixed(2)}% (±${fmt(epsSel)})`],
         ["Any-swap threshold", "Prevent any adjacent swap anywhere", `±${needAnyPct.toFixed(2)}% (±${fmt(epsAny)})`]
       ]);
 
-      // Tie bands
       const cl = clustersAtEps(state.sorted, eps);
       clustersDiv.innerHTML = cl.map((c, idx)=>{
         const ranks = c.map(x=>state.sorted.indexOf(x)+1);
         const from = Math.min(...ranks);
         const to = Math.max(...ranks);
         const items = c.map(x=>x.item).join(", ");
-        return `<div class="callout" style="margin-bottom:10px;">
-                  <strong>Band ${idx+1} (ranks ${from} to ${to})</strong><br>
+        const spansBoundary = from <= k && to >= k;
+        const borderStyle = spansBoundary ? 'border-color: var(--warning); background: var(--warning-light);' : '';
+        return `<div class="callout" style="margin-bottom:10px; ${borderStyle}">
+                  <strong>Band ${idx+1} (ranks ${from} to ${to})${spansBoundary ? ' ⚠️ SPANS BOUNDARY' : ''}</strong><br>
                   <span class="muted">${items}</span>
                 </div>`;
       }).join("");
 
-      // Preview
       const nPrev = clamp(Math.floor(Number(previewN.value) || 25), 5, 200);
       renderTable(previewTable, ["Rank","Item","Score"],
-        state.sorted.slice(0,nPrev).map((r,i)=>[String(i+1), r.item, String(r.score)])
+        state.sorted.slice(0,nPrev).map((r,i)=>{
+          const rank = i+1;
+          const isBoundary = rank === k || rank === k+1;
+          return [
+            isBoundary ? `<strong>${rank}</strong>` : String(rank), 
+            isBoundary ? `<strong>${r.item}</strong>` : r.item, 
+            isBoundary ? `<strong>${r.score}</strong>` : String(r.score)
+          ];
+        })
       );
 
-      // Plots
-      drawPlot(scorePlot, state.scores, { yLabel:"score" });
+      drawPlot(scorePlot, state.scores, { yLabel:"score", boundaryIndex: k-0.5 });
       drawPlot(gapPlot, state.bps.gaps, { yLabel:"gap", threshold: 2*eps });
-
       mcOut.style.display = "none";
     }
 
-    function exportJSON(){
-      const eps = Number(epsSlider.value) || 0;
-      const k = selectionSize();
-      const epsSel = (state.sorted[k-1].score - state.sorted[k].score)/2;
-
-      const result = {
-        meta: {
-          generated_at: new Date().toISOString(),
-          note: "Decision hygiene tool. Thresholds derived from score spacing. This does not estimate true uncertainty."
-        },
-        input: {
-          n_items: state.sorted.length,
-          selection_size: k,
-          wiggle_room_abs: eps,
-          wiggle_room_pct_of_range: (eps/state.range)*100
-        },
-        thresholds: {
-          selection_flip_requires_accuracy_within: {
-            abs: epsSel,
-            pct_of_range: (epsSel/state.range)*100
-          }
-        },
-        tie_bands: clustersAtEps(state.sorted, eps).map(cluster => cluster.map(x=>x.item)),
-        preview: state.sorted.slice(0,25)
-      };
-
-      const blob = new Blob([JSON.stringify(result,null,2)], { type:"application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "ranksmarter_result.json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    // Preset behavior
     preset.addEventListener("change", ()=>{
       if (!state){
-        // still show custom input toggle even before data, so user sees it
         if (preset.value === "custom") customEpsWrap.style.display = "block";
         else customEpsWrap.style.display = "none";
         return;
       }
-
       if (preset.value === "custom"){
         customEpsWrap.style.display = "block";
         setEpsFromPct(Number(epsPctInput.value) || 0.5);
@@ -1248,7 +1617,6 @@
       updateOutputs();
     });
 
-    // Stress test UI
     mcEnable.addEventListener("change", ()=>enableMcUI(mcEnable.checked));
 
     runMcBtn.addEventListener("click", ()=>{
@@ -1257,48 +1625,44 @@
       const nSamp = clamp(Math.floor(Number(mcN.value) || 2000), 200, 20000);
       const seed = clamp(Math.floor(Number(mcSeed.value) || 12345), 0, 999999999);
       const k = selectionSize();
-
-      const mc = runMonteCarlo(state.sorted, eps, nSamp, seed, k);
-
-      const setSamePct = (mc.selection.setSameProb*100).toFixed(1);
-      const overlapPct = (mc.selection.avgOverlapFrac*100).toFixed(1);
-
-      mcSummary.textContent = `Selected set unchanged: ${setSamePct}%. Average overlap: ${overlapPct}%.`;
-
-      renderTable(mcTopKTable, ["Metric","Value"], [
-        ["Selected set unchanged", `${setSamePct}%`],
-        ["Average overlap", `${overlapPct}%`]
-      ]);
-
-      renderTable(mcMoveTable, ["Orig rank","Item","Same-rank %","Avg |move|","Observed rank range"],
-        mc.rows.slice(0,30).map(r=>[
-          String(r.origRank),
-          r.item,
-          (r.stability*100).toFixed(1) + "%",
-          fmt(r.avgAbsMove),
-          `${r.minRank} to ${r.maxRank}`
-        ])
-      );
-
-      renderTable(mcInclTable, ["Orig rank","Item","P(in selection)"],
-        mc.rows.slice(0,30).map(r=>{
-          const p = mc.selection.inclusionProb.find(x=>x.item===r.item)?.prob ?? 0;
-          return [String(r.origRank), r.item, (p*100).toFixed(1) + "%"];
-        })
-      );
-
-      mcOut.style.display = "block";
+      runMcBtn.innerHTML = '<span class="spinner"></span> Running...';
+      runMcBtn.disabled = true;
+      setTimeout(()=>{
+        const mc = runMonteCarlo(state.sorted, eps, nSamp, seed, k);
+        const setSamePct = (mc.selection.setSameProb*100).toFixed(1);
+        const overlapPct = (mc.selection.avgOverlapFrac*100).toFixed(1);
+        mcSummary.innerHTML = `Selected set unchanged in <strong>${setSamePct}%</strong> of trials. Average overlap: <strong>${overlapPct}%</strong>.`;
+        renderTable(mcTopKTable, ["Metric","Value"], [
+          ["Selected set unchanged", `${setSamePct}%`],
+          ["Average overlap", `${overlapPct}%`]
+        ]);
+        renderTable(mcMoveTable, ["Orig rank","Item","Same-rank %","Avg |move|","Observed rank range"],
+          mc.rows.slice(0,30).map(r=>[
+            String(r.origRank),
+            r.item,
+            (r.stability*100).toFixed(1) + "%",
+            fmt(r.avgAbsMove),
+            `${r.minRank} to ${r.maxRank}`
+          ])
+        );
+        renderTable(mcInclTable, ["Orig rank","Item","P(in selection)"],
+          mc.rows.slice(0,30).map(r=>{
+            const p = mc.selection.inclusionProb.find(x=>x.item===r.item)?.prob ?? 0;
+            return [String(r.origRank), r.item, (p*100).toFixed(1) + "%"];
+          })
+        );
+        mcOut.style.display = "block";
+        runMcBtn.innerHTML = 'Run stress test';
+        runMcBtn.disabled = false;
+      }, 50);
     });
 
-    // Export
     exportJsonBtn.addEventListener("click", ()=>{ if (state) exportJSON(); });
-
-    // Main controls
+    exportMarkdownBtn.addEventListener("click", ()=>{ if (state) exportMarkdown(); });
     pickN.addEventListener("change", ()=>updateOutputs());
     kInput.addEventListener("input", ()=>updateOutputs());
     previewN.addEventListener("input", ()=>updateOutputs());
 
-    // Demo and example
     downloadExampleBtn.addEventListener("click", (e)=>{
       e.preventDefault();
       const csv = [
@@ -1310,9 +1674,10 @@
         "Epsilon,91.2",
         "Zeta,90.9",
         "Eta,90.8",
-        "Theta,90.6"
+        "Theta,90.6",
+        "Iota,89.2",
+        "Kappa,88.5"
       ].join("\n");
-
       const blob = new Blob([csv], { type:"text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1335,42 +1700,36 @@
         "Epsilon,91.2",
         "Zeta,90.9",
         "Eta,90.8",
-        "Theta,90.6"
+        "Theta,90.6",
+        "Iota,89.2",
+        "Kappa,88.5"
       ].join("\n");
-
       rawGrid = parseCSVRobust(csv);
       headers = rawGrid[0];
       dataRows = rawGrid.slice(1);
-
       fillSelect(itemColSel, headers);
       fillSelect(scoreColSel, headers);
       itemColSel.value = "0";
       scoreColSel.value = "1";
-
       mapRow.style.display = "flex";
       parseStatus.textContent = `Loaded demo data (${dataRows.length} rows). Click Run.`;
       applyMapBtn.focus();
     });
 
-    // File upload parse
     fileInput.addEventListener("change", async ()=>{
       const file = fileInput.files?.[0];
       if (!file) return;
-
       try{
         const text = await file.text();
         rawGrid = parseCSVRobust(text);
         headers = rawGrid[0];
         dataRows = rawGrid.slice(1);
-
         fillSelect(itemColSel, headers);
         fillSelect(scoreColSel, headers);
-
         const itemGuess = guessColumn(headers, ["item","name","label","id","candidate","vendor"]);
         const scoreGuess = guessColumn(headers, ["score","value","rating","points","rank_score","total"]);
         if (itemGuess !== -1) itemColSel.value = String(itemGuess);
         if (scoreGuess !== -1) scoreColSel.value = String(scoreGuess);
-
         mapRow.style.display = "flex";
         parseStatus.textContent = `Loaded ${dataRows.length} rows. Confirm columns and click Run.`;
       } catch(err){
@@ -1386,28 +1745,19 @@
       try{
         const itemIdx = Number(itemColSel.value);
         const scoreIdx = Number(scoreColSel.value);
-
         state = computeFromMapping(itemIdx, scoreIdx);
-
         controls.style.display = "block";
         out.style.display = "block";
-
-        // Default selection size: 5 or n-1
         const n = state.sorted.length;
         const def = Math.min(5, Math.max(1, n-1));
         pickN.value = (def===1 || def===3 || def===5 || def===10) ? String(def) : "custom";
         kInput.value = String(def);
-
-        // Default wiggle room preset is 0.50%
         preset.value = "0.50";
         customEpsWrap.style.display = "none";
         epsPctInput.value = "0.50";
-
         updateEpsControls();
         enableMcUI(mcEnable.checked);
-
         parseStatus.textContent = `Parsed ${state.sorted.length} valid rows.`;
-
         updateOutputs();
         controls.scrollIntoView({ behavior:"smooth", block:"start" });
       } catch(err){
@@ -1417,13 +1767,6 @@
         out.style.display = "none";
       }
     });
-
-    // Modal open hooks
-    document.getElementById("openMath").addEventListener("click", openMathModal);
-    document.getElementById("openMathHero").addEventListener("click", openMathModal);
-    document.getElementById("openMath2").addEventListener("click", openMathModal);
-    document.getElementById("closeMath").addEventListener("click", closeMathModal);
-    mathBackdrop.addEventListener("click", (e)=>{ if (e.target === mathBackdrop) closeMathModal(e); });
   </script>
 </body>
 </html>
