@@ -383,16 +383,23 @@
 
       show(mcBlock);
 
+      // Improved, plain-English messaging
+      const unchangedPct = (mc.sameSetProb * 100).toFixed(1);
+      const avgOverlapPct = (mc.avgOverlapFrac * 100).toFixed(1);
+      const avgOverlapCount = Math.round(mc.avgOverlapFrac * k);
+
       mcSummary.textContent =
-        `Selected set unchanged in ${(mc.sameSetProb * 100).toFixed(1)}% of trials. ` +
-        `Average overlap is ${(mc.avgOverlapFrac * 100).toFixed(1)}%.`;
+        `Stability check: if the scores were slightly wrong (within your wiggle room), you would pick ` +
+        `exactly the same set ${unchangedPct}% of the time. On average, ${avgOverlapCount} out of ${k} ` +
+        `selected items stay the same (≈${avgOverlapPct}% overlap).`;
 
       const rows = (mc.inclusionTop || []).map(x => [
         escapeHtml(x.item),
         (x.prob * 100).toFixed(1) + "%"
       ]);
 
-      renderTable(mcTable, ["Item", "P(in selected set)"], rows);
+      // Improved table header label
+      renderTable(mcTable, ["Item", "Chance of being selected"], rows);
     } catch (err) {
       alert(err && err.message ? err.message : String(err));
     }
