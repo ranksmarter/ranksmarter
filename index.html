@@ -72,7 +72,7 @@
   <div class="grid2">
     <label class="row">
       <input type="checkbox" id="mcEnable">
-      <span>Run stress test (Monte Carlo)</span>
+      <span>Run sensitivity test (Monte Carlo)</span>
     </label>
 
     <div class="row">
@@ -89,7 +89,7 @@
 
   <div class="row">
     <button id="runAnalysis" class="primary" type="button">Run analysis</button>
-    <button id="runMc" type="button" disabled>Run stress test</button>
+    <button id="runMc" type="button" disabled>Run sensitivity test</button>
   </div>
 </section>
 
@@ -124,7 +124,7 @@
   <div class="miniTable" id="previewTable"></div>
 
   <div class="hidden" id="mcBlock">
-    <h3>Stress test results</h3>
+    <h3>Sensitivity test results</h3>
     <p id="mcSummary" class="hint"></p>
     <div class="miniTable" id="mcTable"></div>
   </div>
@@ -198,11 +198,11 @@ gap     = sN − sN+1</pre>
       <ol>
         <li>Upload your CSV (two columns: item, score).</li>
         <li>Choose how many you are selecting. That is your cutoff.</li>
-        <li>Set wiggle room to the largest scoring error you consider plausible.</li>
+        <li>Set bounds to the largest plausible scoring error, or leave as default.</li>
         <li>Run analysis. If the cutoff is not defensible, treat the boundary as a tie band.</li>
       </ol>
       <p class="hint">
-        Tip: if you are unsure about wiggle room, start higher. If the cutoff still holds, you have a robust boundary.
+        Tip: To determine you have a robust boundary start with a higher value.
       </p>
     </div>
   </div>
