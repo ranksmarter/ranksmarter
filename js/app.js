@@ -1,31 +1,11 @@
 // app.js (classic script, no imports)
-// Expects globals:
-// - window.RankSmarterAnalyze(data, k, eps)
-// - window.RankSmarterMonteCarlo(sorted, k, eps, samples, seed)   (optional)
-// - window.RankSmarterExportJSON(result, mc)                      (optional)
-// - window.RankSmarterExportMarkdown(result, mc)                  (optional)
 
 (function () {
-  // ---------- Safe DOM helpers ----------
   function $(id) { return document.getElementById(id); }
-  function exists(el) { return !!el; }
   function show(el) { if (el) el.classList.remove("hidden"); }
   function hide(el) { if (el) el.classList.add("hidden"); }
+  function exists(x) { return !!x; }
 
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    }[c]));
-  }
-
-  function renderTable(container, headers, rows) {
-    if (!container) return;
-    const h = headers.map(x => `<th>${escapeHtml(x)}</th>`).join("");
-    const b = rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("");
-    container.innerHTML = `<table><thead><tr>${h}</tr></thead><tbody>${b}</tbody></table>`;
-  }
-
-  // ---------- Elements (may vary by your index.html) ----------
   const fileInput = $("fileInput");
   const uploadStatus = $("uploadStatus");
 
@@ -71,12 +51,22 @@
   const jumpUpload = $("jumpUpload");
   const uploadCard = $("uploadCard");
 
-  // ---------- State ----------
   let data = [];
   let lastResult = null;
   let lastMc = null;
 
-  // ---------- CSV parsing ----------
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  function renderTable(container, headers, rows) {
+    const h = headers.map(x => `<th>${escapeHtml(x)}</th>`).join("");
+    const b = rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("");
+    container.innerHTML = `<table><thead><tr>${h}</tr></thead><tbody>${b}</tbody></table>`;
+  }
+
   function splitCSVLine(line) {
     const res = [];
     let cur = "";
@@ -87,9 +77,7 @@
         if (ch === '"') {
           if (line[i + 1] === '"') { cur += '"'; i++; }
           else inQ = false;
-        } else {
-          cur += ch;
-        }
+        } else cur += ch;
       } else {
         if (ch === '"') inQ = true;
         else if (ch === ",") { res.push(cur); cur = ""; }
@@ -126,23 +114,22 @@
     return out;
   }
 
-  // ---------- Modals ----------
   function openModal(modalEl) {
     if (!modalEl) return;
     modalEl.setAttribute("aria-hidden", "false");
-    show(modalEl);
+    modalEl.classList.remove("hidden");
   }
 
   function closeModal(modalEl) {
     if (!modalEl) return;
     modalEl.setAttribute("aria-hidden", "true");
-    hide(modalEl);
+    modalEl.classList.add("hidden");
   }
 
   function wireModal(modalEl, openEls, closeSelector) {
     if (!modalEl) return;
 
-    // Ensure closed on load
+    // ensure closed on load
     closeModal(modalEl);
 
     for (const el of openEls) {
@@ -165,7 +152,6 @@
   wireModal(mathModal, [openMath, openMathHero], ".closeModal");
   wireModal(guideModal, [openGuide], ".closeGuide");
 
-  // ---------- Upload jump ----------
   if (jumpUpload && uploadCard && fileInput) {
     jumpUpload.addEventListener("click", () => {
       uploadCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -173,10 +159,7 @@
     });
   }
 
-  // ---------- Controls ----------
   function setControlsForData() {
-    if (!controls || !kInput || !epsInput) return;
-
     const n = data.length;
     show(controls);
 
@@ -186,115 +169,93 @@
     const defaultK = Math.min(5, maxK);
     if (!kInput.value) kInput.value = String(defaultK);
 
-    if (kHint) kHint.textContent = `You have ${n} items. Valid selection size is 1 to ${maxK}.`;
+    kHint.textContent = `You have ${n} items. Valid cutoff is 1 to ${maxK}.`;
 
-    if (epsValue) epsValue.textContent = Number(epsInput.value || 0).toFixed(2);
+    epsValue.textContent = Number(epsInput.value || 0).toFixed(2);
   }
 
-  if (epsInput && epsValue) {
-    epsInput.addEventListener("input", () => {
-      epsValue.textContent = Number(epsInput.value || 0).toFixed(2);
-    });
-  }
+  epsInput.addEventListener("input", () => {
+    epsValue.textContent = Number(epsInput.value || 0).toFixed(2);
+  });
 
-  // Monte Carlo enable block (optional UI)
-  if (mcEnable) {
-    mcEnable.addEventListener("change", () => {
-      const enabled = mcEnable.checked;
-      if (mcSamples) mcSamples.disabled = !enabled;
-      if (mcSeed) mcSeed.disabled = !enabled;
-      if (runMcBtn) runMcBtn.disabled = !enabled;
-      if (!enabled) {
-        hide(mcBlock);
-        lastMc = null;
-      }
-    });
-  }
+  // Monte Carlo toggle
+  mcEnable.addEventListener("change", () => {
+    const enabled = mcEnable.checked;
+    mcSamples.disabled = !enabled;
+    mcSeed.disabled = !enabled;
+    runMcBtn.disabled = !enabled;
+    if (!enabled) {
+      hide(mcBlock);
+      lastMc = null;
+    }
+  });
 
-  // ---------- File load ----------
-  if (fileInput) {
-    fileInput.addEventListener("change", async (e) => {
-      const f = e.target.files && e.target.files[0];
-      if (!f) return;
+  fileInput.addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
 
-      try {
-        const text = await f.text();
-        data = parseCSV(text);
+    try {
+      const text = await f.text();
+      data = parseCSV(text);
 
-        if (uploadStatus) {
-          uploadStatus.textContent = `Loaded ${data.length} valid rows. Now set how many you are selecting, and the plausible scoring uncertainty.`;
-        }
+      uploadStatus.textContent =
+        `Loaded ${data.length} valid rows. Next: set how many you are selecting, and the maximum scoring error you think is plausible.`;
 
-        setControlsForData();
+      setControlsForData();
 
-        // reset outputs
-        hide(verdict);
-        hide(details);
-        lastResult = null;
-        lastMc = null;
-        hide(mcBlock);
+      // reset outputs
+      hide(verdict);
+      hide(details);
+      lastResult = null;
+      lastMc = null;
+      hide(mcBlock);
 
-        // scroll user into step 2
-        if (controls) controls.scrollIntoView({ behavior: "smooth", block: "start" });
-      } catch (err) {
-        if (uploadStatus) uploadStatus.textContent = err && err.message ? err.message : String(err);
-        data = [];
-        hide(controls);
-        hide(verdict);
-        hide(details);
-      }
-    });
-  }
+      controls.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (err) {
+      uploadStatus.textContent = err && err.message ? err.message : String(err);
+      data = [];
+      hide(controls);
+      hide(verdict);
+      hide(details);
+    }
+  });
 
-  // Demo load
-  if (loadDemo) {
-    loadDemo.addEventListener("click", async (e) => {
-      e.preventDefault();
-      try {
-        const resp = await fetch("assets/example.csv", { cache: "no-store" });
-        const text = await resp.text();
-        data = parseCSV(text);
+  loadDemo.addEventListener("click", async (e) => {
+    e.preventDefault();
+    try {
+      const resp = await fetch("assets/example.csv", { cache: "no-store" });
+      const text = await resp.text();
+      data = parseCSV(text);
 
-        if (uploadStatus) {
-          uploadStatus.textContent = `Loaded demo data (${data.length} rows). Now set how many you are selecting, and the plausible scoring uncertainty.`;
-        }
+      uploadStatus.textContent =
+        `Loaded demo data (${data.length} rows). Next: set selection size and plausible scoring error.`;
 
-        setControlsForData();
-        hide(verdict);
-        hide(details);
-        lastResult = null;
-        lastMc = null;
-        hide(mcBlock);
+      setControlsForData();
 
-        if (controls) controls.scrollIntoView({ behavior: "smooth", block: "start" });
-      } catch (err) {
-        if (uploadStatus) uploadStatus.textContent = "Could not load demo. Ensure assets/example.csv exists.";
-      }
-    });
-  }
+      hide(verdict);
+      hide(details);
+      lastResult = null;
+      lastMc = null;
+      hide(mcBlock);
 
-  // ---------- Core messaging helpers ----------
-  function setVerdictPill(text, kind) {
-    if (!verdictPill) return;
+      controls.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (err) {
+      uploadStatus.textContent = "Could not load demo. Ensure assets/example.csv exists.";
+    }
+  });
+
+  function setPill(text, kind) {
     verdictPill.textContent = text;
-
-    // Optional: if your CSS uses classes for styling, preserve compatibility:
     verdictPill.classList.remove("pill-good", "pill-warn", "pill-bad");
     if (kind) verdictPill.classList.add(kind);
   }
 
-  function humanWiggleExplanation(eps) {
-    // Keep it short and practical
-    return `Your “wiggle room” is the largest scoring error you think is plausible in this process (for example: rater disagreement, criteria interpretation, or estimation noise).`;
-  }
-
-  // ---------- Run analysis ----------
   function runAnalysis() {
     if (!data.length) return;
-    if (!window.RankSmarterAnalyze) throw new Error("RankSmarterAnalyze is missing. Check js/analysis.js is loaded.");
+    if (!window.RankSmarterAnalyze) throw new Error("RankSmarterAnalyze not found. Check js/analysis.js is loaded.");
 
-    const k = Number(kInput && kInput.value ? kInput.value : 1);
-    const eps = Number(epsInput && epsInput.value ? epsInput.value : 0);
+    const k = Number(kInput.value || 1);
+    const eps = Number(epsInput.value || 0);
 
     const result = window.RankSmarterAnalyze(data, k, eps);
     lastResult = result;
@@ -302,222 +263,153 @@
     hide(mcBlock);
 
     const fmt = result.fmt;
-    const b = result.boundary; // from new analysis.js: requiredEpsForGuarantee, etc.
-    const regions = result.regions;
-    const sugg = result.suggestions;
+    const b = result.boundary;
+    const r = result.regions;
+    const s = result.suggestions;
 
     show(verdict);
     show(details);
 
     const n = result.meta.n;
-    const chosenK = result.meta.k;
-    const epsVal = result.meta.eps;
 
-    // Region summaries
-    const gIn = regions.guaranteedIn;          // {fromRank,toRank}
-    const gOut = regions.guaranteedOut;        // {fromRank,toRank}
-    const tb = regions.tieBand;                // null or {loRank,hiRank,size,spansBoundary,items:[...]}
+    if (r.tieBand && r.tieBand.spansBoundary) {
+      // Main “real world” output
+      setPill("Boundary is a tie band", "pill-warn");
 
-    // 1) Primary verdict and recommended action
-    if (!tb && result.stableSelectedSet) {
-      setVerdictPill("Cutoff is defensible", "pill-good");
+      const L = r.tieBand.loRank;
+      const U = r.tieBand.hiRank;
 
-      if (verdictText) {
-        verdictText.textContent =
-          `With ±${fmt(epsVal)} scoring uncertainty, selecting the top ${chosenK} is stable. The boundary gap is large enough that the chosen cutoff will not flip under this error bound.`;
-      }
+      verdictText.textContent =
+        `At ±${fmt(result.meta.eps)} scoring uncertainty, your cutoff at top ${result.meta.k} falls inside a near-tie. ` +
+        `Ranks ${L} to ${U} are mathematically indistinguishable under that error bound.`;
 
-      if (actionText) {
-        actionText.textContent =
-          `Recommendation: keep a strict cutoff at ${chosenK}.`;
-      }
+      const parts = [];
+      if (r.guaranteedIn.toRank >= 1) parts.push(`Guaranteed in: ranks 1 to ${r.guaranteedIn.toRank}.`);
+      parts.push(`Tie band: ranks ${L} to ${U}.`);
+      if (r.guaranteedOut.fromRank <= n) parts.push(`Guaranteed out: ranks ${r.guaranteedOut.fromRank} to ${n}.`);
 
-      if (whyText) {
-        whyText.textContent =
-          `${humanWiggleExplanation(epsVal)} For the boundary between rank ${chosenK} and ${chosenK + 1} to be guaranteed, scoring would need to be accurate within about ±${fmt(b.requiredEpsForGuarantee)}. You assumed ±${fmt(epsVal)}.`;
-      }
-    } else if (tb && tb.spansBoundary) {
-      // This is the useful case: boundary sits inside a tie band
-      setVerdictPill("Boundary is a tie band", "pill-warn");
+      actionText.textContent =
+        `${parts.join(" ")} If you need a single hard cutoff, pick either conservative (top ${s.conservativeCutoffK}) or inclusive (top ${s.inclusiveCutoffK}), then use a secondary criterion inside the tie band.`;
 
-      const L = tb.loRank;
-      const U = tb.hiRank;
-
-      const safeIn = gIn.toRank;      // could be 0
-      const safeOutFrom = gOut.fromRank;
-
-      if (verdictText) {
-        verdictText.textContent =
-          `At ±${fmt(epsVal)} scoring uncertainty, the cutoff at ${chosenK} falls inside a near-tie. Ranks ${L} to ${U} are mathematically indistinguishable under your stated error bound.`;
-      }
-
-      // The “5 vs 6 close but 7 far below” case is exactly: tie band might be 5–6, and guaranteed out starts at 7.
-      if (actionText) {
-        const parts = [];
-        if (safeIn >= 1) parts.push(`Guaranteed in: ranks 1 to ${safeIn}.`);
-        parts.push(`Tie band: ranks ${L} to ${U}.`);
-        if (safeOutFrom <= n) parts.push(`Guaranteed out: ranks ${safeOutFrom} to ${n}.`);
-
-        const cutParts = [];
-        cutParts.push(`If you need a hard cutoff, you have two defensible options:`);
-        cutParts.push(`Conservative cutoff: select top ${sugg.conservativeCutoffK}.`);
-        cutParts.push(`Inclusive cutoff: select top ${sugg.inclusiveCutoffK}.`);
-
-        actionText.textContent = `${parts.join(" ")} ${cutParts.join(" ")}`;
-      }
-
-      if (whyText) {
-        whyText.textContent =
-          `${humanWiggleExplanation(epsVal)} Your chosen boundary is forced only if ε is below about ±${fmt(b.requiredEpsForGuarantee)} at the (N, N+1) gap. Here ε is larger, so the ordering can flip within the band. The items outside the band remain separated by gaps larger than 2ε, which is why they are “guaranteed” in or out.`;
-      }
+      whyText.textContent =
+        `This is not preference. With your wiggle room, the ordering inside the tie band can flip. ` +
+        `A guaranteed strict cutoff at the boundary would require scoring accuracy of about ±${fmt(b.requiredEpsForGuarantee)} at ranks ${result.meta.k} and ${result.meta.k + 1}.`;
     } else {
-      // Fallback: should be rare with the new band logic, but keep sane messaging
-      setVerdictPill("Cutoff needs caution", "pill-warn");
+      // Stable case
+      setPill("Cutoff is defensible", "pill-good");
 
-      if (verdictText) {
-        verdictText.textContent =
-          `At ±${fmt(epsVal)} scoring uncertainty, the cutoff at ${chosenK} is not reliably stable. Treat the boundary with caution.`;
-      }
+      verdictText.textContent =
+        `With ±${fmt(result.meta.eps)} scoring uncertainty, selecting the top ${result.meta.k} is stable at the boundary.`;
 
-      if (actionText) {
-        actionText.textContent =
-          `Recommendation: either tighten the scoring process (reduce uncertainty) or treat the boundary as a tie band and use a secondary criterion.`;
-      }
+      actionText.textContent =
+        `Recommendation: keep a strict cutoff at ${result.meta.k}.`;
 
-      if (whyText) {
-        whyText.textContent =
-          `Forced accuracy at the boundary is about ±${fmt(b.requiredEpsForGuarantee)}. You assumed ±${fmt(epsVal)}.`;
-      }
+      whyText.textContent =
+        `To guarantee the boundary never flips, scoring would need to be accurate within about ±${fmt(b.requiredEpsForGuarantee)} at the cutoff pair. ` +
+        `You assumed ±${fmt(result.meta.eps)}.`;
     }
 
-    // 2) Boundary details table
+    // Evidence table
     renderTable(boundaryTable,
       ["Field", "Value"],
       [
-        ["Chosen selection size (N)", `${chosenK}`],
-        ["Boundary pair", `Rank ${chosenK} vs rank ${chosenK + 1}`],
-        ["Inside at boundary", `${escapeHtml(b.insideItem)} = ${b.insideScore}`],
-        ["Outside at boundary", `${escapeHtml(b.outsideItem)} = ${b.outsideScore}`],
-        ["Gap at boundary", `${fmt(b.gap)}`],
+        ["Chosen selection size (N)", `${result.meta.k}`],
+        ["Boundary items", `Rank ${result.meta.k}: ${escapeHtml(b.insideItem)} vs Rank ${result.meta.k + 1}: ${escapeHtml(b.outsideItem)}`],
+        ["Boundary scores", `${b.insideScore} vs ${b.outsideScore}`],
+        ["Gap at boundary", fmt(b.gap)],
         ["Accuracy required for guaranteed cutoff", `±${fmt(b.requiredEpsForGuarantee)}`],
-        ["Your stated wiggle room", `±${fmt(epsVal)}`]
+        ["Your wiggle room", `±${fmt(result.meta.eps)}`]
       ]
     );
 
-    // 3) Tie band explanation box
-    if (tieBandBox) {
-      if (tb && tb.spansBoundary) {
-        const L = tb.loRank;
-        const U = tb.hiRank;
-
-        const safeIn = regions.guaranteedIn.toRank;
-        const safeOutFrom = regions.guaranteedOut.fromRank;
-
-        let msg = "";
-        if (safeIn >= 1) msg += `Guaranteed in (stable under ±${fmt(epsVal)}): ranks 1 to ${safeIn}. `;
-        msg += `Tie band (cannot justify a strict cutoff inside this region): ranks ${L} to ${U}. `;
-        if (safeOutFrom <= n) msg += `Guaranteed out: ranks ${safeOutFrom} to ${n}. `;
-        msg += `If you want a strict rule, choose either conservative (top ${sugg.conservativeCutoffK}) or inclusive (top ${sugg.inclusiveCutoffK}).`;
-
-        tieBandBox.innerHTML = msg;
-      } else {
-        tieBandBox.textContent =
-          "No tie band around the cutoff at this wiggle room. The boundary gap is larger than the error bound, so the chosen cutoff is stable under this model.";
-      }
+    // Tie band box
+    if (r.tieBand && r.tieBand.spansBoundary) {
+      tieBandBox.innerHTML =
+        `Treat ranks <strong>${r.tieBand.loRank}</strong> to <strong>${r.tieBand.hiRank}</strong> as a tie band. ` +
+        `That means a strict cutoff inside this range is not defensible under your stated uncertainty. ` +
+        `Use a secondary criterion (extra interview, reference check, cost-risk review, or domain-specific metric) to decide within the band.`;
+    } else {
+      tieBandBox.textContent =
+        "No tie band at this wiggle room. The boundary gap is larger than the error bound, so the cutoff is stable under this model.";
     }
 
-    // 4) Preview table (top 20) with highlighting for tie band and boundary
+    // Preview
     const maxRows = Math.min(20, result.sorted.length);
-    const tbLo = tb ? tb.loRank : null;
-    const tbHi = tb ? tb.hiRank : null;
+    const tbLo = r.tieBand ? r.tieBand.loRank : null;
+    const tbHi = r.tieBand ? r.tieBand.hiRank : null;
 
-    const preview = result.sorted.slice(0, maxRows).map((r, i) => {
+    const preview = result.sorted.slice(0, maxRows).map((row, i) => {
       const rank = i + 1;
+      const isBoundary = (rank === result.meta.k || rank === result.meta.k + 1);
+      const isTie = (tbLo !== null && rank >= tbLo && rank <= tbHi);
 
-      const isBoundaryPair = (rank === chosenK || rank === chosenK + 1);
-      const isInTieBand = (tbLo !== null && tbHi !== null && rank >= tbLo && rank <= tbHi);
+      const rankCell = isBoundary ? `<strong>${rank}</strong>` : `${rank}`;
+      const itemCell = isBoundary ? `<strong>${escapeHtml(row.item)}</strong>` : escapeHtml(row.item);
+      const scoreCell = isBoundary ? `<strong>${row.score}</strong>` : `${row.score}`;
+      const tag = isTie ? ` <span class="tag">tie band</span>` : "";
 
-      const rankCell = isBoundaryPair ? `<strong>${rank}</strong>` : `${rank}`;
-      const itemCell = isBoundaryPair ? `<strong>${escapeHtml(r.item)}</strong>` : escapeHtml(r.item);
-      const scoreCell = isBoundaryPair ? `<strong>${r.score}</strong>` : `${r.score}`;
-
-      const note = isInTieBand ? `<span class="tag">tie band</span>` : "";
-
-      return [rankCell, itemCell, scoreCell + (note ? ` ${note}` : "")];
+      return [rankCell, itemCell, scoreCell + tag];
     });
 
     renderTable(previewTable, ["Rank", "Item", "Score"], preview);
 
-    // 5) Enable exports (if export functions exist)
-    if (exportJsonBtn) exportJsonBtn.disabled = !exists(window.RankSmarterExportJSON);
-    if (exportMarkdownBtn) exportMarkdownBtn.disabled = !exists(window.RankSmarterExportMarkdown);
+    // exports
+    exportJsonBtn.disabled = !exists(window.RankSmarterExportJSON);
+    exportMarkdownBtn.disabled = !exists(window.RankSmarterExportMarkdown);
   }
 
-  if (runAnalysisBtn) {
-    runAnalysisBtn.addEventListener("click", () => {
-      try { runAnalysis(); }
-      catch (err) { alert(err && err.message ? err.message : String(err)); }
-    });
-  }
+  runAnalysisBtn.addEventListener("click", () => {
+    try { runAnalysis(); }
+    catch (err) { alert(err && err.message ? err.message : String(err)); }
+  });
 
-  // ---------- Monte Carlo (optional) ----------
-  if (runMcBtn) {
-    runMcBtn.addEventListener("click", () => {
-      try {
-        if (!window.RankSmarterMonteCarlo) {
-          alert("Monte Carlo module not loaded. Check js/montecarlo.js is included.");
-          return;
-        }
-
-        if (!lastResult) runAnalysis();
-        if (!lastResult) return;
-
-        const eps = Number(epsInput && epsInput.value ? epsInput.value : 0);
-        const k = Number(kInput && kInput.value ? kInput.value : 1);
-
-        const samples = Math.max(200, Math.min(20000, Number(mcSamples && mcSamples.value ? mcSamples.value : 2000)));
-        const seed = Math.max(0, Math.min(999999999, Number(mcSeed && mcSeed.value ? mcSeed.value : 12345)));
-
-        const mc = window.RankSmarterMonteCarlo(lastResult.sorted, k, eps, samples, seed);
-        lastMc = mc;
-
-        show(mcBlock);
-
-        if (mcSummary) {
-          mcSummary.textContent =
-            `Selected set unchanged in ${(mc.sameSetProb * 100).toFixed(1)}% of trials. Average overlap is ${(mc.avgOverlapFrac * 100).toFixed(1)}%.`;
-        }
-
-        const rows = (mc.inclusionTop || []).map(x => [
-          escapeHtml(x.item),
-          (x.prob * 100).toFixed(1) + "%"
-        ]);
-
-        renderTable(mcTable, ["Item", "P(in selected set)"], rows);
-      } catch (err) {
-        alert(err && err.message ? err.message : String(err));
+  runMcBtn.addEventListener("click", () => {
+    try {
+      if (!window.RankSmarterMonteCarlo) {
+        alert("Monte Carlo module not loaded. Check js/montecarlo.js is included.");
+        return;
       }
-    });
-  }
 
-  // ---------- Exports ----------
-  if (exportJsonBtn) {
-    exportJsonBtn.addEventListener("click", () => {
+      if (!lastResult) runAnalysis();
       if (!lastResult) return;
-      if (!window.RankSmarterExportJSON) { alert("Export JSON module not loaded."); return; }
-      window.RankSmarterExportJSON(lastResult, lastMc);
-    });
-  }
 
-  if (exportMarkdownBtn) {
-    exportMarkdownBtn.addEventListener("click", () => {
-      if (!lastResult) return;
-      if (!window.RankSmarterExportMarkdown) { alert("Export report module not loaded."); return; }
-      window.RankSmarterExportMarkdown(lastResult, lastMc);
-    });
-  }
+      const eps = Number(epsInput.value || 0);
+      const k = Number(kInput.value || 1);
+      const samples = Math.max(200, Math.min(20000, Number(mcSamples.value || 2000)));
+      const seed = Math.max(0, Math.min(999999999, Number(mcSeed.value || 12345)));
 
-  // Disable exports until there is a result
-  if (exportJsonBtn) exportJsonBtn.disabled = true;
-  if (exportMarkdownBtn) exportMarkdownBtn.disabled = true;
+      const mc = window.RankSmarterMonteCarlo(lastResult.sorted, k, eps, samples, seed);
+      lastMc = mc;
+
+      show(mcBlock);
+
+      mcSummary.textContent =
+        `Selected set unchanged in ${(mc.sameSetProb * 100).toFixed(1)}% of trials. ` +
+        `Average overlap is ${(mc.avgOverlapFrac * 100).toFixed(1)}%.`;
+
+      const rows = (mc.inclusionTop || []).map(x => [
+        escapeHtml(x.item),
+        (x.prob * 100).toFixed(1) + "%"
+      ]);
+
+      renderTable(mcTable, ["Item", "P(in selected set)"], rows);
+    } catch (err) {
+      alert(err && err.message ? err.message : String(err));
+    }
+  });
+
+  exportJsonBtn.addEventListener("click", () => {
+    if (!lastResult) return;
+    if (!window.RankSmarterExportJSON) { alert("Export JSON module not loaded."); return; }
+    window.RankSmarterExportJSON(lastResult, lastMc);
+  });
+
+  exportMarkdownBtn.addEventListener("click", () => {
+    if (!lastResult) return;
+    if (!window.RankSmarterExportMarkdown) { alert("Export report module not loaded."); return; }
+    window.RankSmarterExportMarkdown(lastResult, lastMc);
+  });
+
+  exportJsonBtn.disabled = true;
+  exportMarkdownBtn.disabled = true;
 })();
