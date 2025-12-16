@@ -61,7 +61,7 @@
 
   <label>
     Assumed score error (wiggle room)
-    <input type="range" id="epsInput" min="0" max="5" step="0.01">
+    <input type="range" id="epsInput" min="0" max="5" step="0.01" value="0.50">
     <span id="epsValue"></span>
   </label>
 
@@ -89,8 +89,8 @@
     </p>
 
     <p>
-      RankSmarter turns that into a simple, auditable question:
-      <strong>how accurate would your scoring need to be for your cutoff to be guaranteed?</strong>
+      RankSmarter turns that into one auditable question:
+      <strong>how accurate would scoring need to be for your cutoff to be guaranteed?</strong>
       If you cannot defend that level of accuracy, the honest move is to treat the boundary as a tie band.
     </p>
 
@@ -98,7 +98,7 @@
     <p>
       Wiggle room (ε) is the largest scoring error you consider plausible for this process.
       It is an input because it depends on the domain:
-      structured interviews can be tighter than unstructured interviews, and cost estimates are different again.
+      structured interviews can be tighter than unstructured interviews, and cost estimates differ again.
     </p>
 
     <h4>The deterministic threshold</h4>
@@ -116,9 +116,7 @@ gap = sN − sN+1</pre>
     </p>
     <pre>sN − ε ≤ sN+1 + ε</pre>
 
-    <p>
-      Rearranging gives the forced threshold:
-    </p>
+    <p>Rearranging gives the forced threshold:</p>
     <pre>ε ≥ (sN − sN+1) / 2
 ε ≥ gap / 2</pre>
 
@@ -133,69 +131,8 @@ gap = sN − sN+1</pre>
   </div>
 </div>
 
-<script src="js/analysis.js"></script>
-<script src="js/montecarlo.js"></script>
-<script src="js/export.js"></script>
-<script src="js/app.js"></script>
-
-<!-- Modal control: prevents auto-open and guarantees click-to-open behaviour -->
-<script>
-  (function () {
-    const mathModal = document.getElementById("mathModal");
-    const openMath = document.getElementById("openMath");
-    const openMathHero = document.getElementById("openMathHero");
-    const closeButtons = mathModal ? mathModal.querySelectorAll(".closeModal") : [];
-
-    function showMath(e) {
-      if (e) e.preventDefault();
-      if (!mathModal) return;
-      mathModal.classList.remove("hidden");
-      mathModal.setAttribute("aria-hidden", "false");
-    }
-
-    function hideMath(e) {
-      if (e) e.preventDefault();
-      if (!mathModal) return;
-      mathModal.classList.add("hidden");
-      mathModal.setAttribute("aria-hidden", "true");
-    }
-
-    // Ensure hidden on load, even if some other script tries to show it.
-    if (mathModal) {
-      mathModal.classList.add("hidden");
-      mathModal.setAttribute("aria-hidden", "true");
-    }
-
-    if (openMath) openMath.addEventListener("click", showMath);
-    if (openMathHero) openMathHero.addEventListener("click", showMath);
-
-    closeButtons.forEach(btn => btn.addEventListener("click", hideMath));
-
-    // Click outside the modal content closes it
-    if (mathModal) {
-      mathModal.addEventListener("click", function (e) {
-        if (e.target === mathModal) hideMath(e);
-      });
-    }
-
-    // Escape closes it
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") hideMath(e);
-    });
-
-    // Upload button should jump and open file picker
-    const jumpUpload = document.getElementById("jumpUpload");
-    const uploadCard = document.getElementById("uploadCard");
-    const fileInput = document.getElementById("fileInput");
-
-    if (jumpUpload && uploadCard && fileInput) {
-      jumpUpload.addEventListener("click", function () {
-        uploadCard.scrollIntoView({ behavior: "smooth", block: "start" });
-        setTimeout(() => fileInput.click(), 250);
-      });
-    }
-  })();
-</script>
+<!-- IMPORTANT: load only app.js, as a module. It imports the others. -->
+<script type="module" src="js/app.js"></script>
 
 </body>
 </html>
