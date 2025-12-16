@@ -19,6 +19,7 @@ body {
 .topbar {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
 }
@@ -42,7 +43,6 @@ nav a {
 
 nav a:hover {
   color: var(--text);
-  text-decoration: underline;
 }
 
 .hero {
@@ -60,8 +60,11 @@ nav a:hover {
 
 .hero p {
   color: var(--muted);
-  max-width: 600px;
+  max-width: 680px;
+  line-height: 1.45;
 }
+
+.usecases { margin-top: 14px; }
 
 .hero-right .step {
   background: var(--card);
@@ -72,13 +75,11 @@ nav a:hover {
 }
 
 .hero-right span {
-  font-weight: bold;
+  font-weight: 700;
   margin-right: 8px;
 }
 
-.actions button {
-  margin-right: 12px;
-}
+.actions button { margin-right: 12px; }
 
 .card {
   background: var(--card);
@@ -88,10 +89,41 @@ nav a:hover {
   border-radius: 16px;
 }
 
-/* Make sure hidden always wins, including over .modal display:flex */
-.hidden {
-  display: none !important;
+.hint { color: var(--muted); }
+.small { display: inline-block; margin-top: 6px; color: var(--muted); font-size: 13px; }
+
+code { background: #0f0f0f; border: 1px solid var(--border); padding: 2px 6px; border-radius: 8px; }
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.inline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+input[type="number"] {
+  width: 160px;
+  background: #0f0f0f;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+input[type="range"] { width: 280px; }
 
 button {
   background: none;
@@ -102,65 +134,87 @@ button {
   cursor: pointer;
 }
 
-button:hover {
-  border-color: #3a3a3a;
-}
-
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
 }
 
-/* =========================
-   MODAL
-   ========================= */
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.exports { margin-top: 14px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+.pill {
+  display: inline-flex;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  margin: 10px 0 8px;
+}
+
+.callout {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: #101010;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.miniTable table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.miniTable th, .miniTable td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 14px;
+}
+.miniTable th { color: var(--muted); font-weight: 600; }
+
+.hidden { display: none !important; }
+
+/* Modal */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0,0,0,0.72);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 24px;
-  z-index: 9999;
+  padding: 18px;
+  z-index: 999;
 }
 
-/* Scroll inside the modal if content is tall */
 .modal-content {
   background: var(--card);
   border: 1px solid var(--border);
-  padding: 20px;
   border-radius: 16px;
-  width: min(860px, 100%);
-  max-height: 85vh;
+  width: min(820px, 96vw);
+  max-height: 86vh;
   overflow: auto;
 }
 
-/* Make long maths blocks readable */
-.modal-content pre {
-  white-space: pre-wrap;
-  word-break: break-word;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  padding: 10px 12px;
-  border-radius: 10px;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
 }
 
-.modal-content h3 {
-  margin-top: 0;
+.modal-body {
+  padding: 16px;
+  line-height: 1.5;
 }
 
-.closeModal {
-  margin-top: 14px;
-}
-
-/* Responsive: stack hero on small screens */
-@media (max-width: 900px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
-  .hero h1 {
-    font-size: 40px;
-  }
+.modal-body pre {
+  background: #0f0f0f;
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 12px;
+  overflow: auto;
 }
