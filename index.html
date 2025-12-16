@@ -26,17 +26,17 @@
   <div class="hero-left">
     <h1>Stop pretending your ranking is real.</h1>
     <p>
-      Rankings often look precise, but small scoring errors can change who gets selected.
-      RankSmarter is a mathematical reality check that tells you whether a cutoff is defensible,
-      and if not, exactly where you should treat the boundary as a tie.
+      Rankings look precise, but small scoring noise can change who gets selected.
+      RankSmarter is a reality check for shortlists: it tells you whether your cutoff is defensible,
+      or whether you should treat the boundary as a tie band.
     </p>
     <p class="usecases">
       <strong>Use it for:</strong> hiring scorecards, vendor selection, prioritisation,
       investment shortlists, grant awards.
     </p>
     <div class="actions">
-      <button id="jumpUpload" class="primary">Upload scores</button>
-      <button id="openMathHero">Explain the maths</button>
+      <button id="jumpUpload" class="primary" type="button">Upload scores</button>
+      <button id="openMathHero" type="button">Explain the maths</button>
     </div>
   </div>
 
@@ -65,7 +65,7 @@
     <span id="epsValue"></span>
   </label>
 
-  <button id="runAnalysis" class="primary">Run analysis</button>
+  <button id="runAnalysis" class="primary" type="button">Run analysis</button>
 </section>
 
 <section class="card hidden" id="verdict">
@@ -73,28 +73,63 @@
   <p id="verdictText"></p>
   <p id="actionText"></p>
   <div class="exports">
-    <button id="exportJson">Download JSON</button>
-    <button id="exportMarkdown">Download report</button>
+    <button id="exportJson" type="button">Download JSON</button>
+    <button id="exportMarkdown" type="button">Download report</button>
   </div>
 </section>
 
 <!-- Maths modal -->
-<div class="modal hidden" id="mathModal">
-  <div class="modal-content">
-    <h3>The maths (optional)</h3>
+<div class="modal hidden" id="mathModal" role="dialog" aria-modal="true" aria-labelledby="mathTitle" aria-hidden="true">
+  <div class="modal-content" role="document">
+    <h3 id="mathTitle">The maths (optional)</h3>
+
     <p>
-      If you select the top N items, the cutoff is between scores sₙ and sₙ₊₁.
-      If each score may be wrong by ±ε, the order can flip when:
+      Rankings feel decisive because they print a clean order. In real decisions, the scoring process has wobble:
+      raters disagree, criteria get interpreted differently, and the data is incomplete.
     </p>
-    <pre>sₙ − ε ≤ sₙ₊₁ + ε</pre>
+
     <p>
-      This implies a forced threshold:
+      RankSmarter turns that into a simple, auditable question:
+      <strong>how accurate would your scoring need to be for your cutoff to be guaranteed?</strong>
+      If you cannot defend that level of accuracy, the honest move is to treat the boundary as a tie band.
     </p>
-    <pre>ε ≥ (sₙ − sₙ₊₁) / 2</pre>
+
+    <h4>What “wiggle room” means here</h4>
     <p>
-      That value is not a preference. It is implied by the data.
+      Wiggle room (ε) is the largest scoring error you consider plausible for this process.
+      It is an input because it depends on the domain:
+      structured interviews can be tighter than unstructured interviews, and cost estimates are different again.
     </p>
-    <button class="closeModal">Close</button>
+
+    <h4>The deterministic threshold</h4>
+    <p>
+      Sort scores high to low. If you select the top <strong>N</strong>, the boundary sits between rank <strong>N</strong> and <strong>N+1</strong>.
+      Let the two scores be:
+    </p>
+    <pre>inside = sN
+outside = sN+1
+gap = sN − sN+1</pre>
+
+    <p>
+      In the worst case, the inside score could be over-scored by ε and the outside score could be under-scored by ε.
+      The boundary can flip when:
+    </p>
+    <pre>sN − ε ≤ sN+1 + ε</pre>
+
+    <p>
+      Rearranging gives the forced threshold:
+    </p>
+    <pre>ε ≥ (sN − sN+1) / 2
+ε ≥ gap / 2</pre>
+
+    <p>
+      That threshold is implied by the data. It is repeatable and auditable.
+      RankSmarter uses it to tell you whether a strict cutoff is defensible or whether you are slicing a near-tie.
+    </p>
+
+    <div class="modal-actions">
+      <button class="closeModal" type="button">Close</button>
+    </div>
   </div>
 </div>
 
@@ -102,6 +137,65 @@
 <script src="js/montecarlo.js"></script>
 <script src="js/export.js"></script>
 <script src="js/app.js"></script>
+
+<!-- Modal control: prevents auto-open and guarantees click-to-open behaviour -->
+<script>
+  (function () {
+    const mathModal = document.getElementById("mathModal");
+    const openMath = document.getElementById("openMath");
+    const openMathHero = document.getElementById("openMathHero");
+    const closeButtons = mathModal ? mathModal.querySelectorAll(".closeModal") : [];
+
+    function showMath(e) {
+      if (e) e.preventDefault();
+      if (!mathModal) return;
+      mathModal.classList.remove("hidden");
+      mathModal.setAttribute("aria-hidden", "false");
+    }
+
+    function hideMath(e) {
+      if (e) e.preventDefault();
+      if (!mathModal) return;
+      mathModal.classList.add("hidden");
+      mathModal.setAttribute("aria-hidden", "true");
+    }
+
+    // Ensure hidden on load, even if some other script tries to show it.
+    if (mathModal) {
+      mathModal.classList.add("hidden");
+      mathModal.setAttribute("aria-hidden", "true");
+    }
+
+    if (openMath) openMath.addEventListener("click", showMath);
+    if (openMathHero) openMathHero.addEventListener("click", showMath);
+
+    closeButtons.forEach(btn => btn.addEventListener("click", hideMath));
+
+    // Click outside the modal content closes it
+    if (mathModal) {
+      mathModal.addEventListener("click", function (e) {
+        if (e.target === mathModal) hideMath(e);
+      });
+    }
+
+    // Escape closes it
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") hideMath(e);
+    });
+
+    // Upload button should jump and open file picker
+    const jumpUpload = document.getElementById("jumpUpload");
+    const uploadCard = document.getElementById("uploadCard");
+    const fileInput = document.getElementById("fileInput");
+
+    if (jumpUpload && uploadCard && fileInput) {
+      jumpUpload.addEventListener("click", function () {
+        uploadCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        setTimeout(() => fileInput.click(), 250);
+      });
+    }
+  })();
+</script>
 
 </body>
 </html>
