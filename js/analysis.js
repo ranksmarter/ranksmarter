@@ -1,15 +1,5 @@
 // analysis.js (global)
 // Provides window.RankSmarterAnalyze(data, k, eps)
-//
-// Purpose:
-// - Given a ranked list (item, score), a selection size k, and an assumed bounded error eps,
-//   compute whether the cutoff between k and k+1 is forced by the score spacing.
-// - If the boundary is inside a near-tie region, compute a tie band [L..U] around the boundary.
-// - Derive:
-//   * guaranteedIn = ranks 1..(L-1) (safe inside)
-//   * tieBand = ranks L..U (uncertain region that spans the boundary)
-//   * guaranteedOut = ranks (U+1)..n (safe outside)
-// - Also report conservative and inclusive defensible hard cutoffs around the band.
 
 (function () {
   function sortDesc(data) {
@@ -30,22 +20,11 @@
     return x.toFixed(4);
   }
 
-  function gaps(sorted) {
-    const out = [];
-    for (let i = 0; i < sorted.length - 1; i++) {
-      out.push({
-        betweenRanks: [i + 1, i + 2],
-        gap: sorted[i].score - sorted[i + 1].score
-      });
-    }
-    return out;
-  }
-
-  // Build a tie band around the selection boundary if the boundary gap is within 2*eps.
-  // Tie-band rule: adjacent items are inseparable when gap <= 2*eps.
-  function tieBandAroundBoundary(sorted, eps, k) {
+  // Tie band defined as a contiguous region where each adjacent gap <= 2*eps.
+  // If the boundary (k vs k+1) is inside such a region, strict cutoff is not defensible there.
+  function tieBandAroundCut(sorted, eps, k) {
     const n = sorted.length;
-    const cut = k - 1; // boundary between cut and cut+1 (0-indexed)
+    const cut = k - 1;
     if (cut < 0 || cut >= n - 1) return null;
 
     const gapAtCut = sorted[cut].score - sorted[cut + 1].score;
@@ -54,51 +33,24 @@
     let lo = cut;
     let hi = cut + 1;
 
-    // Expand upward while adjacent gaps are within 2*eps
     while (lo > 0) {
       const g = sorted[lo - 1].score - sorted[lo].score;
       if (g <= 2 * eps) lo--;
       else break;
     }
-
-    // Expand downward while adjacent gaps are within 2*eps
     while (hi < n - 1) {
       const g = sorted[hi].score - sorted[hi + 1].score;
       if (g <= 2 * eps) hi++;
       else break;
     }
 
-    return { loRank: lo + 1, hiRank: hi + 1, reason: "boundary gap <= 2ε implies boundary is inside a tie band" };
-  }
-
-  // The deterministic threshold at a boundary is forced by the two scores:
-  // boundary can flip if eps >= (gap/2).
-  function boundaryThreshold(sorted, k) {
-    const inside = sorted[k - 1];
-    const outside = sorted[k];
-    const gap = inside.score - outside.score;
     return {
-      insideItem: inside.item,
-      outsideItem: outside.item,
-      insideScore: inside.score,
-      outsideScore: outside.score,
-      gap,
-      requiredEpsForGuarantee: gap / 2
+      loRank: lo + 1,
+      hiRank: hi + 1,
+      size: (hi - lo + 1),
+      spansBoundary: (lo <= cut && hi >= cut + 1),
+      items: sorted.slice(lo, hi + 1)
     };
-  }
-
-  // Compute per-adjacent-pair epsilon thresholds (gap/2) for interpretability and export.
-  function pairwiseThresholds(sorted) {
-    const out = [];
-    for (let i = 0; i < sorted.length - 1; i++) {
-      const gap = sorted[i].score - sorted[i + 1].score;
-      out.push({
-        betweenRanks: [i + 1, i + 2],
-        gap,
-        requiredEpsToPreventSwap: gap / 2
-      });
-    }
-    return out;
   }
 
   function analyze(data, kInput, epsInput) {
@@ -116,95 +68,60 @@
     const k = clampInt(kInput, 1, n - 1);
     const eps = Math.max(0, Number(epsInput) || 0);
 
-    const boundary = boundaryThreshold(sorted, k);
+    const inside = sorted[k - 1];
+    const outside = sorted[k];
 
-    // If eps < gap/2 at the boundary, the selected set is guaranteed unchanged (under bounded error model).
-    const stableSelectedSet = eps < boundary.requiredEpsForGuarantee;
+    const gap = inside.score - outside.score;
+    const requiredEpsForGuarantee = gap / 2;
 
-    // Tie band around boundary at this eps (if any).
-    const band = tieBandAroundBoundary(sorted, eps, k);
+    // Stable selected set condition at the boundary only (classic criterion).
+    const stableSelectedSet = eps < requiredEpsForGuarantee;
 
-    // Derive guaranteed regions and alternative defensible hard cutoffs.
-    let guaranteedInMaxRank = k;     // default: top-k is safe (only true when stableSelectedSet)
-    let guaranteedOutMinRank = k + 1;
-    let conservativeCutoffK = k;     // smallest defensible hard cutoff
-    let inclusiveCutoffK = k;        // largest defensible hard cutoff
+    const band = tieBandAroundCut(sorted, eps, k);
+
+    // Guaranteed regions:
+    // If tie band spans boundary:
+    // - guaranteed in: ranks 1..(loRank-1)
+    // - tie band: loRank..hiRank
+    // - guaranteed out: (hiRank+1)..n
+    // If no tie band, then boundary is stable under the simple model.
+    let guaranteedIn = { fromRank: 1, toRank: k };
+    let guaranteedOut = { fromRank: k + 1, toRank: n };
     let tieBand = null;
 
-    if (!band) {
-      // No tie band at this eps, but the boundary could still be unstable if eps >= gap/2.
-      // In that case, "no band" means boundary gap > 2*eps, which implies eps < gap/2,
-      // so stableSelectedSet should be true. Still, keep logic consistent.
-      guaranteedInMaxRank = k;
-      guaranteedOutMinRank = k + 1;
-      conservativeCutoffK = k;
-      inclusiveCutoffK = k;
-    } else {
-      // Boundary lies inside [L..U].
-      const L = band.loRank;
-      const U = band.hiRank;
-
-      // Guaranteed-in items are above the tie band.
-      guaranteedInMaxRank = Math.max(0, L - 1);
-      // Guaranteed-out items are below the tie band.
-      guaranteedOutMinRank = Math.min(n + 1, U + 1);
-
-      // Two defensible hard cutoffs around the uncertainty band:
-      // - conservative: only take items guaranteed to remain inside
-      // - inclusive: take everything up to the bottom of the tie band
-      conservativeCutoffK = guaranteedInMaxRank;
-      inclusiveCutoffK = U;
-
-      tieBand = {
-        loRank: L,
-        hiRank: U,
-        size: U - L + 1,
-        spansBoundary: (L <= k && U >= k + 1),
-        items: sorted.slice(L - 1, U).map((r, idx) => ({
-          rank: (L - 1) + idx + 1,
-          item: r.item,
-          score: r.score
-        }))
-      };
+    if (band && band.spansBoundary) {
+      tieBand = band;
+      guaranteedIn = { fromRank: 1, toRank: Math.max(0, band.loRank - 1) };
+      guaranteedOut = { fromRank: Math.min(n, band.hiRank + 1), toRank: n };
     }
 
-    // Helpful local comparison facts (common “5 vs 6 vs 7” type reasoning).
-    const local = {
-      boundaryRank: k,
-      boundaryPair: { ranks: [k, k + 1], gap: boundary.gap, requiredEpsForGuarantee: boundary.requiredEpsForGuarantee },
-      gapAboveBoundary: (k - 2 >= 0) ? (sorted[k - 2].score - sorted[k - 1].score) : null, // gap between k-1 and k
-      gapBelowBoundary: (k + 1 < n) ? (sorted[k].score - sorted[k + 1].score) : null       // gap between k+1 and k+2
-    };
+    // Suggested defensible hard cutoffs if user insists on a single number:
+    // - conservative: select only guaranteed-in
+    // - inclusive: select guaranteed-in + entire tie band (if boundary is within tie band)
+    const conservativeCutoffK = (tieBand && tieBand.spansBoundary) ? guaranteedIn.toRank : k;
+    const inclusiveCutoffK = (tieBand && tieBand.spansBoundary) ? tieBand.hiRank : k;
 
     return {
       meta: { n, k, eps },
       sorted,
-
-      // Primary interpretation objects
-      boundary,
-      stableSelectedSet,
-
-      // Regions implied at this eps
-      regions: {
-        guaranteedIn: { fromRank: 1, toRank: guaranteedInMaxRank },
-        tieBand: tieBand, // null if no band
-        guaranteedOut: { fromRank: guaranteedOutMinRank, toRank: n }
+      boundary: {
+        insideItem: inside.item,
+        outsideItem: outside.item,
+        insideScore: inside.score,
+        outsideScore: outside.score,
+        gap,
+        requiredEpsForGuarantee
       },
-
-      // Optional "hard cutoff" suggestions around a boundary-spanning band
-      // conservativeCutoffK may be 0 if tie band starts at rank 1 (rare but possible)
+      stableSelectedSet,
+      regions: {
+        guaranteedIn,
+        tieBand,
+        guaranteedOut
+      },
       suggestions: {
         conservativeCutoffK,
         inclusiveCutoffK
       },
-
-      // Diagnostics for UI, exports, and "Explain" content
-      diagnostics: {
-        pairwiseThresholds: pairwiseThresholds(sorted),
-        gaps: gaps(sorted),
-        local
-      },
-
       fmt
     };
   }
