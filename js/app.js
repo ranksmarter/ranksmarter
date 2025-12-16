@@ -250,6 +250,12 @@
     if (kind) verdictPill.classList.add(kind);
   }
 
+  function clampInt(x, lo, hi) {
+    const v = Math.floor(Number(x));
+    if (!Number.isFinite(v)) return lo;
+    return Math.max(lo, Math.min(hi, v));
+  }
+
   function runAnalysis() {
     if (!data.length) return;
     if (!window.RankSmarterAnalyze) throw new Error("RankSmarterAnalyze not found. Check js/analysis.js is loaded.");
@@ -288,8 +294,32 @@
       parts.push(`Tie band: ranks ${L} to ${U}.`);
       if (r.guaranteedOut.fromRank <= n) parts.push(`Guaranteed out: ranks ${r.guaranteedOut.fromRank} to ${n}.`);
 
+      // FIX: never show "top 0" (and keep both suggestions inside valid domain)
+      const maxK = Math.max(1, n - 1);
+      const rawConservative = Number(s && s.conservativeCutoffK);
+      const rawInclusive = Number(s && s.inclusiveCutoffK);
+
+      // Conservative should never be 0. If it would be, fall back to "Guaranteed in" rank (may be 0, but we won't print 0),
+      // otherwise fall back to chosen k (at least 1).
+      const fallbackConservative = Math.max(1, clampInt(r.guaranteedIn && r.guaranteedIn.toRank, 1, maxK));
+      const conservativeK = clampInt(
+        Number.isFinite(rawConservative) ? rawConservative : fallbackConservative,
+        1,
+        maxK
+      );
+
+      // Inclusive should never be <1 either, and must be <= maxK
+      // Typically inclusive = tieBand.hiRank, but keep it clamped.
+      const fallbackInclusive = clampInt(U, 1, maxK);
+      const inclusiveK = clampInt(
+        Number.isFinite(rawInclusive) ? rawInclusive : fallbackInclusive,
+        1,
+        maxK
+      );
+
       actionText.textContent =
-        `${parts.join(" ")} If you need a single hard cutoff, pick either conservative (top ${s.conservativeCutoffK}) or inclusive (top ${s.inclusiveCutoffK}), then use a secondary criterion inside the tie band.`;
+        `${parts.join(" ")} If you need a single hard cutoff, pick either conservative (top ${conservativeK}) ` +
+        `or inclusive (top ${inclusiveK}), then use a secondary criterion inside the tie band.`;
 
       whyText.textContent =
         `This is not preference. With your wiggle room, the ordering inside the tie band can flip. ` +
