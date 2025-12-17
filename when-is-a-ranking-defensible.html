@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>When Is a Ranking Defensible? How to Justify Shortlist Cutoffs | RankSmarter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Most rankings look precise but fail under small scoring errors. Learn when a shortlist cutoff is defensible, how tie bands form, and how to check stability in your browser.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">RankSmarter</span>
+    <span class="privacy">🔒 Local only, your data never leaves the browser</span>
+  </div>
+  <nav>
+    <a href="index.html">Run the tool</a>
+    <a href="when-is-a-ranking-defensible.html" aria-current="page">Read the guide</a>
+    <a href="assets/example.csv" download>Example CSV</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-left">
+    <h1>When is a ranking actually defensible?</h1>
+    <p>
+      Most rankings look decisive because they print a neat order. The problem is that many scoring processes contain
+      small, routine uncertainty. When two scores are close, that uncertainty can change who appears “above the line”.
+    </p>
+    <p>
+      This page explains what “defensible” means in practice and how to test whether your shortlist cutoff is a genuine
+      separation or just an arbitrary slice through a near-tie.
+    </p>
+
+    <div class="actions">
+      <a class="buttonLike primary" href="index.html">Check your ranking with the tool</a>
+      <a class="buttonLike" href="#quickanswer">Skip to the practical test</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="step"><span>1</span> Identify the cutoff you plan to apply</div>
+    <div class="step"><span>2</span> Assume a plausible scoring error</div>
+    <div class="step"><span>3</span> See whether the boundary is stable or a tie band</div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Why ranking cutoffs are often hard to justify</h2>
+  <p>
+    A ranking is only as good as the scoring process behind it. In real decisions, scoring error is routine:
+    different raters interpret criteria differently, data is incomplete, and judgments drift over time.
+  </p>
+  <p>
+    The practical failure mode is simple. You pick the top <strong>N</strong>. If the scores around the boundary are close,
+    a small change can flip who lands in the selected set. The ranking still looks precise, but the cutoff is no longer
+    something you can defend with a straight face.
+  </p>
+  <p>
+    People often search for how to justify a ranking or defend a shortlist decision when scores are close. In practice,
+    most ranking systems never test whether their cutoffs remain valid under realistic scoring uncertainty. That is why
+    many rankings collapse when challenged, even if the scoring process looked rigorous.
+  </p>
+</section>
+
+<section class="card">
+  <h2>The hidden problem: precision theatre</h2>
+  <p>
+    A clean ordered list invites you to believe that ranks are “real”. Usually they are not. What you actually have is a set
+    of approximate scores with small errors, and a reporting format that hides those errors.
+  </p>
+  <p>
+    When score differences are large, none of this matters. When score differences are small, it matters a lot.
+    The harm is not abstract: strong candidates get cut, good vendors get dropped, and high-value projects are delayed
+    because a near-tie was treated like a clear separation.
+  </p>
+</section>
+
+<section class="card">
+  <h2>“But we still need a cutoff”</h2>
+  <p>
+    Yes. Decisions need boundaries. The point is not to avoid choosing.
+    The point is to avoid pretending that a near-tie is a clean separation.
+  </p>
+  <p>
+    When a cutoff falls inside a near-tie, you have three defensible options:
+  </p>
+  <ol>
+    <li><strong>Use a tie band</strong> (treat a range of ranks as indistinguishable) and apply a secondary criterion.</li>
+    <li><strong>Improve measurement</strong> (tighter rubric, extra data, calibration) and rerun scoring.</li>
+    <li><strong>Choose explicitly</strong> (acknowledge judgment or constraints) rather than claiming “the ranking decided”.</li>
+  </ol>
+</section>
+
+<section class="card" id="quickanswer">
+  <h2>The key question that determines whether a cutoff is defensible</h2>
+  <p>
+    A cutoff is defensible when it remains stable under realistic scoring uncertainty.
+    In plain English:
+  </p>
+  <p>
+    <strong>If the scores were slightly wrong, would you still pick the same set?</strong>
+  </p>
+  <p>
+    RankSmarter operationalises that idea in two ways:
+  </p>
+  <ul>
+    <li>
+      <strong>Deterministic boundary check:</strong> examines the score gap at the cutoff and tells you the accuracy required
+      for that boundary to never flip.
+    </li>
+    <li>
+      <strong>Sensitivity test (Monte Carlo):</strong> simulates many “plausible scoring worlds” within your error bounds to show
+      how often the selected set changes and which items are effectively coin-flips.
+    </li>
+  </ul>
+
+  <div class="callout">
+    <strong>Translation:</strong> this is not about “picking a number you like”. You are declaring a plausible error bound for your
+    scoring process, then asking what your own data implies under that bound.
+  </div>
+</section>
+
+<section class="card">
+  <h2>How to test your cutoff in 60 seconds</h2>
+  <ol>
+    <li>Open the tool: <a href="index.html"><strong>RankSmarter (local browser tool)</strong></a>.</li>
+    <li>Upload your CSV with <code>item</code> and <code>score</code>.</li>
+    <li>Set <strong>how many you are selecting</strong> (your intended cutoff).</li>
+    <li>
+      Set <strong>wiggle room</strong> to the largest scoring error you consider plausible for this process.
+      If unsure, start higher. If the boundary is still stable, you genuinely have a robust separation.
+    </li>
+    <li>Click <strong>Run analysis</strong>. If offered, run the <strong>Sensitivity test</strong> for a more intuitive “how often does it flip” view.</li>
+  </ol>
+
+  <div class="actions">
+    <a class="buttonLike primary" href="index.html">Run the tool now</a>
+    <a class="buttonLike" href="assets/example.csv" download>Download the example CSV</a>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Frequently asked questions</h2>
+
+  <h3>Are rankings ever objective?</h3>
+  <p>
+    Rankings reflect scoring rules and measurement error, not ground truth. A cutoff is only defensible if small errors cannot
+    change the outcome at the boundary.
+  </p>
+
+  <h3>What does it mean if scores are very close?</h3>
+  <p>
+    It usually implies a near-tie. Treating that boundary as a hard line risks excluding items that are not meaningfully worse
+    than those included.
+  </p>
+
+  <h3>Is this a statistical confidence test?</h3>
+  <p>
+    No. The deterministic check uses score spacing and a declared error bound. The sensitivity test uses simulations within that
+    bound to illustrate practical instability.
+  </p>
+</section>
+
+<footer class="card">
+  <p class="hint">
+    RankSmarter runs locally in your browser. No uploads, no accounts, no data retention.
+    If you have suggestions or want a paid PDF export later, add a note to the repo README.
+  </p>
+</footer>
+
+<style>
+  /* Small compatibility layer so we can reuse your button styling on links without touching styles.css */
+  .buttonLike{
+    display:inline-block;
+    text-decoration:none;
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:10px 14px;
+    border-radius:10px;
+    margin-right:12px;
+    cursor:pointer;
+  }
+  .buttonLike.primary{
+    background:var(--accent);
+    border-color:var(--accent);
+  }
+</style>
+
+</body>
+</html>
